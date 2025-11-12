@@ -13,63 +13,63 @@ interface Page {
 const levelContent: Record<string, Page[]> = {
   "1": [
     {
-      title: "What is an Equation?",
-      content: "An equation is a mathematical statement that shows two expressions are equal. It uses the equals sign (=) to connect both sides. Think of it as a balance scale - whatever you do to one side, you must do to the other to keep it balanced.",
-      narration: "Page one: What is an Equation? An equation is a mathematical statement that shows two expressions are equal. It uses the equals sign to connect both sides. Think of it as a balance scale - whatever you do to one side, you must do to the other to keep it balanced."
+      title: "¿Qué es una Ecuación?",
+      content: "Una ecuación es una declaración matemática que muestra que dos expresiones son iguales. Utiliza el signo igual (=) para conectar ambos lados. Piensa en ella como una balanza: lo que hagas de un lado, debes hacerlo del otro para mantenerla equilibrada.",
+      narration: "Página uno: ¿Qué es una Ecuación? Una ecuación es una declaración matemática que muestra que dos expresiones son iguales. Utiliza el signo igual para conectar ambos lados. Piensa en ella como una balanza: lo que hagas de un lado, debes hacerlo del otro para mantenerla equilibrada."
     },
     {
-      title: "Our Example Equation",
-      content: "The equation we will use is: 2x + 5 = 11. Our goal is to find the value of x. To do this, we need to isolate x on one side of the equation.",
-      narration: "Page two: Our Example Equation. The equation we will use is 2x + 5 = 11. Our goal is to find the value of x. To do this, we need to isolate x on one side of the equation."
+      title: "Nuestra Ecuación de Ejemplo",
+      content: "La ecuación que usaremos es: 2x + 5 = 11. Nuestro objetivo es encontrar el valor de x. Para hacer esto, necesitamos aislar x en un lado de la ecuación.",
+      narration: "Página dos: Nuestra Ecuación de Ejemplo. La ecuación que usaremos es 2x + 5 = 11. Nuestro objetivo es encontrar el valor de x. Para hacer esto, necesitamos aislar x en un lado de la ecuación."
     },
     {
-      title: "Step 1: Subtract 5",
-      content: "First, we subtract 5 from both sides: 2x + 5 - 5 = 11 - 5. This simplifies to: 2x = 6. Remember, we must do the same operation to both sides to maintain balance.",
-      narration: "Page three: Step 1: Subtract 5. First, we subtract 5 from both sides: 2x + 5 - 5 = 11 - 5. This simplifies to: 2x = 6. Remember, we must do the same operation to both sides to maintain balance."
+      title: "Paso 1: Restar 5",
+      content: "Primero, restamos 5 de ambos lados: 2x + 5 - 5 = 11 - 5. Esto se simplifica a: 2x = 6. Recuerda, debemos hacer la misma operación en ambos lados para mantener el equilibrio.",
+      narration: "Página tres: Paso 1: Restar 5. Primero, restamos 5 de ambos lados: 2x + 5 - 5 = 11 - 5. Esto se simplifica a: 2x = 6. Recuerda, debemos hacer la misma operación en ambos lados para mantener el equilibrio."
     },
     {
-      title: "Step 2: Divide by 2",
-      content: "Now we divide both sides by 2: 2x ÷ 2 = 6 ÷ 2. This gives us: x = 3. We have successfully isolated x and found its value!",
-      narration: "Page four: Step 2: Divide by 2. Now we divide both sides by 2: 2x ÷ 2 = 6 ÷ 2. This gives us: x = 3. We have successfully isolated x and found its value!"
+      title: "Paso 2: Dividir por 2",
+      content: "Ahora dividimos ambos lados por 2: 2x ÷ 2 = 6 ÷ 2. Esto nos da: x = 3. ¡Hemos aislado con éxito x y encontrado su valor!",
+      narration: "Página cuatro: Paso 2: Dividir por 2. Ahora dividimos ambos lados por 2: 2x ÷ 2 = 6 ÷ 2. Esto nos da: x = 3. ¡Hemos aislado con éxito x y encontrado su valor!"
     },
     {
-      title: "Solution",
-      content: "The solution is x = 3. You can verify this by substituting 3 back into the original equation: 2(3) + 5 = 11, which equals 6 + 5 = 11. ✓",
-      narration: "Final page: Solution. The solution is x = 3. You can verify this by substituting 3 back into the original equation: 2 times 3 plus 5 equals 11, which equals 6 plus 5 equals 11. Correct!"
+      title: "Solución",
+      content: "La solución es x = 3. Puedes verificar esto sustituyendo 3 de nuevo en la ecuación original: 2(3) + 5 = 11, lo que equivale a 6 + 5 = 11. ✓",
+      narration: "Página final: Solución. La solución es x = 3. Puedes verificar esto sustituyendo 3 de nuevo en la ecuación original: 2 por 3 más 5 es igual a 11, lo que equivale a 6 más 5 es igual a 11. ¡Correcto!"
     }
   ],
   "2": [
     {
-      title: "Basic Operations",
-      content: "In this level, you'll learn about the four basic operations used to solve equations: addition, subtraction, multiplication, and division. Each operation has an inverse operation that undoes it.",
-      narration: "Page one: Basic Operations. In this level, you'll learn about the four basic operations used to solve equations: addition, subtraction, multiplication, and division. Each operation has an inverse operation that undoes it."
+      title: "Operaciones Básicas",
+      content: "En este nivel, aprenderás sobre las cuatro operaciones básicas utilizadas para resolver ecuaciones: suma, resta, multiplicación y división. Cada operación tiene una operación inversa que la deshace.",
+      narration: "Página uno: Operaciones Básicas. En este nivel, aprenderás sobre las cuatro operaciones básicas utilizadas para resolver ecuaciones: suma, resta, multiplicación y división. Cada operación tiene una operación inversa que la deshace."
     },
     {
-      title: "Example Problem",
-      content: "Let's solve: 3x - 7 = 8. We need to isolate x by using inverse operations.",
-      narration: "Page two: Example Problem. Let's solve: 3x - 7 = 8. We need to isolate x by using inverse operations."
+      title: "Problema de Ejemplo",
+      content: "Resolvamos: 3x - 7 = 8. Necesitamos aislar x utilizando operaciones inversas.",
+      narration: "Página dos: Problema de Ejemplo. Resolvamos: 3x - 7 = 8. Necesitamos aislar x utilizando operaciones inversas."
     },
     {
-      title: "Solution",
-      content: "Add 7 to both sides: 3x = 15. Then divide both sides by 3: x = 5. The solution is x = 5.",
-      narration: "Final page: Solution. Add 7 to both sides: 3x = 15. Then divide both sides by 3: x = 5. The solution is x = 5."
+      title: "Solución",
+      content: "Sumamos 7 a ambos lados: 3x = 15. Luego dividimos ambos lados por 3: x = 5. La solución es x = 5.",
+      narration: "Página final: Solución. Sumamos 7 a ambos lados: 3x = 15. Luego dividimos ambos lados por 3: x = 5. La solución es x = 5."
     }
   ],
   "3": [
     {
-      title: "Variables on Both Sides",
-      content: "Sometimes equations have variables on both sides. For example: 2x + 3 = x + 7. To solve these, we need to get all variables on one side.",
-      narration: "Page one: Variables on Both Sides. Sometimes equations have variables on both sides. For example: 2x + 3 = x + 7. To solve these, we need to get all variables on one side."
+      title: "Variables en Ambos Lados",
+      content: "A veces las ecuaciones tienen variables en ambos lados. Por ejemplo: 2x + 3 = x + 7. Para resolverlas, necesitamos llevar todas las variables a un lado.",
+      narration: "Página uno: Variables en Ambos Lados. A veces las ecuaciones tienen variables en ambos lados. Por ejemplo: 2x + 3 = x + 7. Para resolverlas, necesitamos llevar todas las variables a un lado."
     },
     {
-      title: "Solution Strategy",
-      content: "Subtract x from both sides: x + 3 = 7. Then subtract 3 from both sides: x = 4.",
-      narration: "Page two: Solution Strategy. Subtract x from both sides: x + 3 = 7. Then subtract 3 from both sides: x = 4."
+      title: "Estrategia de Solución",
+      content: "Restamos x de ambos lados: x + 3 = 7. Luego restamos 3 de ambos lados: x = 4.",
+      narration: "Página dos: Estrategia de Solución. Restamos x de ambos lados: x + 3 = 7. Luego restamos 3 de ambos lados: x = 4."
     },
     {
-      title: "Final Answer",
-      content: "The solution is x = 4. Always verify by substituting back into the original equation.",
-      narration: "Final page: Final Answer. The solution is x = 4. Always verify by substituting back into the original equation."
+      title: "Respuesta Final",
+      content: "La solución es x = 4. Siempre verifica sustituyendo de nuevo en la ecuación original.",
+      narration: "Página final: Respuesta Final. La solución es x = 4. Siempre verifica sustituyendo de nuevo en la ecuación original."
     }
   ]
 };
@@ -85,9 +85,9 @@ const LearnContent = () => {
   const isLastPage = currentPage === pages.length - 1;
 
   const endOptions = [
-    { label: "Repeat Explanation", narration: "Repeat Explanation button." },
-    { label: "Choose Another Level", narration: "Choose Another Level button." },
-    { label: "Main Menu", narration: "Main Menu button." },
+    { label: "Repetir Explicación", narration: "Botón Repetir Explicación." },
+    { label: "Elegir Otro Nivel", narration: "Botón Elegir Otro Nivel." },
+    { label: "Menú Principal", narration: "Botón Menú Principal." },
   ];
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
@@ -120,7 +120,7 @@ const LearnContent = () => {
   useEffect(() => {
     if (showEndOptions) {
       if (focusedIndex === 0 && narration === "") {
-        setNarration("Explanation finished. Choose an option below. Repeat Explanation button.");
+        setNarration("Explicación finalizada. Elige una opción abajo. Botón Repetir Explicación.");
       } else {
         setNarration(endOptions[focusedIndex].narration);
       }
@@ -140,7 +140,7 @@ const LearnContent = () => {
               {/* Book-like page */}
               <div className="p-12 min-h-[500px] flex flex-col">
                 <div className="text-sm text-muted-foreground mb-4">
-                  Page {currentPage + 1} of {pages.length}
+                  Página {currentPage + 1} de {pages.length}
                 </div>
                 <h2 className="text-3xl font-bold mb-6 uppercase tracking-wide">
                   {pages[currentPage].title}
@@ -150,20 +150,20 @@ const LearnContent = () => {
                 </div>
                 <div className="flex justify-between items-center mt-8 pt-4 border-t-2 border-border">
                   <div className="text-muted-foreground text-sm">
-                    {currentPage > 0 ? "← Previous Page" : " "}
+                    {currentPage > 0 ? "← Página Anterior" : " "}
                   </div>
                   <div className="text-muted-foreground text-sm">
-                    {currentPage < pages.length - 1 ? "Next Page →" : "End of Explanation"}
+                    {currentPage < pages.length - 1 ? "Página Siguiente →" : "Fin de la Explicación"}
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Keyboard Controls:</p>
+              <p className="font-medium mb-2">Controles de Teclado:</p>
               <ul className="space-y-1">
-                <li>→ Right Arrow - Next page</li>
-                <li>← Left Arrow - Previous page{currentPage === 0 ? " (not available on first page)" : ""}</li>
+                <li>→ Flecha Derecha - Página siguiente</li>
+                <li>← Flecha Izquierda - Página anterior{currentPage === 0 ? " (no disponible en la primera página)" : ""}</li>
               </ul>
             </div>
           </>
@@ -171,10 +171,10 @@ const LearnContent = () => {
           <>
             <div className="border-4 border-foreground bg-card p-8 rounded-lg mb-8">
               <h2 className="text-3xl font-bold text-center mb-4 uppercase">
-                Explanation Complete
+                Explicación Completa
               </h2>
               <p className="text-center text-xl text-muted-foreground">
-                Choose an option below
+                Elige una opción abajo
               </p>
             </div>
 

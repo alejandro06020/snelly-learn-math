@@ -11,24 +11,24 @@ const LevelSelect = () => {
 
   const levels = [
     { 
-      label: "Level 1: Introduction", 
+      label: "Nivel 1: Introducción", 
       route: "/learn/level/1",
-      narration: "Level 1: Introduction. button."
+      narration: "Nivel 1: Introducción. Botón."
     },
     { 
-      label: "Level 2: Basic Operations", 
+      label: "Nivel 2: Operaciones Básicas", 
       route: "/learn/level/2",
-      narration: "Level 2: Basic Operations. button."
+      narration: "Nivel 2: Operaciones Básicas. Botón."
     },
     { 
-      label: "Level 3: Variables on Both Sides", 
+      label: "Nivel 3: Variables en Ambos Lados", 
       route: "/learn/level/3",
-      narration: "Level 3: Variables on Both Sides. button."
+      narration: "Nivel 3: Variables en Ambos Lados. Botón."
     },
     { 
-      label: "Back to Main Menu", 
+      label: "Volver al Menú Principal", 
       route: "/",
-      narration: "Back to Main Menu. button."
+      narration: "Volver al Menú Principal. Botón."
     },
   ];
 
@@ -41,7 +41,7 @@ const LevelSelect = () => {
 
   useEffect(() => {
     if (focusedIndex === 0 && narration === "") {
-      setNarration("Choose Your Level. Level 1: Introduction. button.");
+      setNarration("Elige Tu Nivel. Nivel 1: Introducción. Botón.");
     } else {
       setNarration(levels[focusedIndex].narration);
     }
@@ -55,7 +55,7 @@ const LevelSelect = () => {
       <div className="max-w-2xl mx-auto pt-24">
         <div className="border-4 border-foreground bg-card p-8 rounded-lg mb-8">
           <h1 className="text-4xl font-bold text-center uppercase tracking-wider">
-            Choose Your Level
+            Elige Tu Nivel
           </h1>
         </div>
 
@@ -73,10 +73,10 @@ const LevelSelect = () => {
         </nav>
 
         <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Keyboard Controls:</p>
+          <p className="font-medium mb-2">Controles de Teclado:</p>
           <ul className="space-y-1">
-            <li>↑↓ Arrow Keys or Tab - Navigate options</li>
-            <li>Enter - Select level</li>
+            <li>↑↓ Flechas o Tab - Navegar opciones</li>
+            <li>Enter - Seleccionar nivel</li>
           </ul>
         </div>
       </div>

@@ -10,10 +10,10 @@ const MainMenu = () => {
   const [narration, setNarration] = useState("");
 
   const menuOptions = [
-    { label: "Learn", route: "/learn", narration: "Learn button." },
-    { label: "Exercises", route: "/exercises", narration: "Exercises button." },
-    { label: "Options", route: "/options", narration: "Options button." },
-    { label: "Exit App", route: "/exit", narration: "Exit App button." },
+    { label: "Aprender", route: "/learn", narration: "Botón Aprender." },
+    { label: "Ejercicios", route: "/exercises", narration: "Botón Ejercicios." },
+    { label: "Opciones", route: "/options", narration: "Botón Opciones." },
+    { label: "Salir de la Aplicación", route: "/exit", narration: "Botón Salir de la Aplicación." },
   ];
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
@@ -31,7 +31,7 @@ const MainMenu = () => {
 
   useEffect(() => {
     if (focusedIndex === 0 && narration === "") {
-      setNarration("App Name Placeholder. Learn button.");
+      setNarration("Nombre de la Aplicación. Botón Aprender.");
     } else {
       setNarration(menuOptions[focusedIndex].narration);
     }
@@ -45,10 +45,10 @@ const MainMenu = () => {
       <div className="max-w-2xl mx-auto pt-24">
         <div className="border-8 border-foreground bg-card p-12 rounded-lg mb-12">
           <h1 className="text-6xl font-bold text-center mb-2 uppercase tracking-wider">
-            App Name
+            Nombre de la Aplicación
           </h1>
           <p className="text-center text-2xl text-muted-foreground">
-            [Placeholder]
+            [Marcador de Posición]
           </p>
         </div>
 
@@ -60,7 +60,7 @@ const MainMenu = () => {
               focused={focusedIndex === index}
               onClick={() => {
                 if (index === 3) {
-                  if (window.confirm("Are you sure you want to exit?")) {
+                  if (window.confirm("¿Está seguro de que desea salir?")) {
                     window.close();
                   }
                 } else {
@@ -74,10 +74,10 @@ const MainMenu = () => {
         </nav>
 
         <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Keyboard Controls:</p>
+          <p className="font-medium mb-2">Controles de Teclado:</p>
           <ul className="space-y-1">
-            <li>↑↓ Arrow Keys or Tab - Navigate options</li>
-            <li>Enter - Select option</li>
+            <li>↑↓ Flechas o Tab - Navegar opciones</li>
+            <li>Enter - Seleccionar opción</li>
           </ul>
         </div>
       </div>

@@ -18,19 +18,19 @@ const exerciseSteps: ExerciseStep[] = [
   {
     equation: "3x - 7 = 8",
     actions: [
-      { label: "Add 7 to both sides", correct: true, resultEquation: "3x = 15" },
-      { label: "Subtract 3x from both sides", correct: false },
-      { label: "Divide by 8 on both sides", correct: false },
-      { label: "Multiply by 3 on both sides", correct: false },
+      { label: "Sumar 7 a ambos lados", correct: true, resultEquation: "3x = 15" },
+      { label: "Restar 3x de ambos lados", correct: false },
+      { label: "Dividir por 8 en ambos lados", correct: false },
+      { label: "Multiplicar por 3 en ambos lados", correct: false },
     ]
   },
   {
     equation: "3x = 15",
     actions: [
-      { label: "Multiply by 3 on both sides", correct: false },
-      { label: "Divide both sides by 3", correct: true, resultEquation: "x = 5" },
-      { label: "Add 15 to both sides", correct: false },
-      { label: "Subtract 3 from both sides", correct: false },
+      { label: "Multiplicar por 3 en ambos lados", correct: false },
+      { label: "Dividir ambos lados por 3", correct: true, resultEquation: "x = 5" },
+      { label: "Sumar 15 a ambos lados", correct: false },
+      { label: "Restar 3 de ambos lados", correct: false },
     ]
   }
 ];
@@ -52,7 +52,7 @@ const Exercise = () => {
       
       if (action.correct) {
         // Play bell sound (simulated)
-        console.log("🔔 Bell sound - Correct!");
+        console.log("🔔 Sonido de campana - ¡Correcto!");
         
         if (isLastStep) {
           setCompleted(true);
@@ -61,9 +61,9 @@ const Exercise = () => {
         }
       } else {
         // Play duck quack sound (simulated)
-        console.log("🦆 Quack sound - Incorrect!");
+        console.log("🦆 Sonido de pato - ¡Incorrecto!");
         setErrors(errors + 1);
-        setNarration("Incorrect action. Please try again.");
+        setNarration("Acción incorrecta. Por favor, intenta de nuevo.");
         
         // Reset narration after a moment
         setTimeout(() => {
@@ -77,8 +77,8 @@ const Exercise = () => {
   useEffect(() => {
     if (!completed) {
       if (focusedIndex === 0 && currentStep === 0 && narration === "") {
-        setNarration(`Exercise time! The equation to solve is ${step.equation}. Choose the next step. Action A: ${step.actions[0].label}`);
-      } else if (!narration.includes("Incorrect")) {
+        setNarration(`¡Hora de ejercicios! La ecuación a resolver es ${step.equation}. Elige el siguiente paso. Acción A: ${step.actions[0].label}`);
+      } else if (!narration.includes("incorrecta")) {
         setNarration(step.actions[focusedIndex].label);
       }
     }
@@ -98,19 +98,19 @@ const Exercise = () => {
       <div className="max-w-3xl mx-auto pt-24">
         <div className="border-8 border-foreground bg-card p-12 rounded-lg mb-8 text-center">
           <div className="text-sm text-muted-foreground mb-4 uppercase tracking-wider">
-            Step {currentStep + 1} of {exerciseSteps.length}
+            Paso {currentStep + 1} de {exerciseSteps.length}
           </div>
           <div className="text-6xl font-bold mb-4">
             {step.equation}
           </div>
           <p className="text-xl text-muted-foreground">
-            Choose the correct next step
+            Elige el siguiente paso correcto
           </p>
         </div>
 
         <div className="mb-8 p-4 border-2 border-border bg-card rounded">
           <div className="flex justify-between items-center">
-            <span className="text-lg font-medium">Current Errors:</span>
+            <span className="text-lg font-medium">Errores Actuales:</span>
             <span className="text-3xl font-bold">{errors}</span>
           </div>
         </div>
@@ -123,7 +123,7 @@ const Exercise = () => {
               focused={focusedIndex === index}
               onClick={() => {
                 if (action.correct) {
-                  console.log("🔔 Bell sound - Correct!");
+                  console.log("🔔 Sonido de campana - ¡Correcto!");
                   
                   if (isLastStep) {
                     setCompleted(true);
@@ -131,9 +131,9 @@ const Exercise = () => {
                     setCurrentStep(currentStep + 1);
                   }
                 } else {
-                  console.log("🦆 Quack sound - Incorrect!");
+                  console.log("🦆 Sonido de pato - ¡Incorrecto!");
                   setErrors(errors + 1);
-                  setNarration("Incorrect action. Please try again.");
+                  setNarration("Acción incorrecta. Por favor, intenta de nuevo.");
                   
                   setTimeout(() => {
                     setNarration(step.actions[focusedIndex].label);
@@ -141,19 +141,19 @@ const Exercise = () => {
                 }
               }}
             >
-              Action {String.fromCharCode(65 + index)}: {action.label}
+              Acción {String.fromCharCode(65 + index)}: {action.label}
             </NavigableButton>
           ))}
         </nav>
 
         <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Keyboard Controls:</p>
+          <p className="font-medium mb-2">Controles de Teclado:</p>
           <ul className="space-y-1">
-            <li>↑↓ Arrow Keys or Tab - Navigate actions</li>
-            <li>Enter - Select action</li>
+            <li>↑↓ Flechas o Tab - Navegar acciones</li>
+            <li>Enter - Seleccionar acción</li>
           </ul>
           <p className="mt-3 text-xs">
-            🔔 Bell sound = Correct | 🦆 Quack sound = Incorrect
+            🔔 Sonido de campana = Correcto | 🦆 Sonido de pato = Incorrecto
           </p>
         </div>
       </div>

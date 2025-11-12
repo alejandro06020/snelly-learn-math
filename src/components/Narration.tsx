@@ -23,7 +23,7 @@ const Narration = ({ text }: NarrationProps) => {
           <div className="flex-shrink-0 text-lg font-bold">🔊</div>
           <div className="flex-1">
             <div className="text-xs uppercase tracking-wider mb-1 opacity-75">
-              Snelly Narrates:
+              Snelly Narra:
             </div>
             <div className="text-lg font-medium leading-relaxed">
               {displayText}
