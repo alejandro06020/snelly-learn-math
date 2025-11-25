@@ -14,12 +14,25 @@ interface Settings {
 const Options = () => {
   const navigate = useNavigate();
   const [narration, setNarration] = useState("");
-  const [settings, setSettings] = useState<Settings>({
-    volume: 50,
-    speed: 1.0,
-    enabled: true,
-    voice: "Snelly (Actual)",
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+  
+  const [settings, setSettings] = useState<Settings>(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    const savedVolume = localStorage.getItem('narratorVolume');
+    const savedEnabled = localStorage.getItem('narratorEnabled');
+    
+    return {
+      volume: savedVolume ? parseInt(savedVolume) : 50,
+      speed: savedSpeed ? parseFloat(savedSpeed) : 1.0,
+      enabled: savedEnabled ? savedEnabled === 'true' : true,
+      voice: "Snelly (Aria)",
+    };
   });
+
+  useEffect(() => {
+    setSpeed(settings.speed);
+  }, [settings.speed]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<Settings | null>(null);
 
@@ -103,6 +116,10 @@ const Options = () => {
       if (e.key === "Enter") {
         if (pendingChanges) {
           setSettings(pendingChanges);
+          // Save to localStorage
+          localStorage.setItem('narratorSpeed', pendingChanges.speed.toString());
+          localStorage.setItem('narratorVolume', pendingChanges.volume.toString());
+          localStorage.setItem('narratorEnabled', pendingChanges.enabled.toString());
         }
         setShowConfirmation(false);
         setPendingChanges(null);
@@ -118,28 +135,28 @@ const Options = () => {
   }, [showConfirmation, pendingChanges, navigate]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
-      <Snelly />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      <Snelly isSpeaking={isSpeaking} />
       
       {showConfirmation && (
-        <div className="fixed inset-0 bg-foreground/50 flex items-center justify-center z-40">
-          <div className="bg-card border-8 border-foreground rounded-lg p-12 max-w-2xl">
-            <h2 className="text-3xl font-bold mb-6 text-center">Confirmar Cambios</h2>
-            <p className="text-xl text-center mb-8">
+        <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-40">
+          <div className="bg-card border-4 border-primary rounded-2xl p-12 max-w-2xl shadow-2xl">
+            <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Confirmar Cambios</h2>
+            <p className="text-xl text-center mb-8 text-muted-foreground">
               Las modificaciones serán guardadas.
             </p>
             <div className="space-y-3 text-center text-lg">
-              <p className="font-bold">Presiona ENTER para aceptar</p>
-              <p>Presiona cualquier otra tecla para cancelar</p>
+              <p className="font-bold text-primary">Presiona ENTER para aceptar</p>
+              <p className="text-muted-foreground">Presiona cualquier otra tecla para cancelar</p>
             </div>
           </div>
         </div>
       )}
       
       <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-foreground bg-card p-8 rounded-lg mb-8">
-          <h1 className="text-4xl font-bold text-center uppercase tracking-wider">
+        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
+          <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Opciones de Accesibilidad
           </h1>
         </div>

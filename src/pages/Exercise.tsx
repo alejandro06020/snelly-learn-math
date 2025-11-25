@@ -41,6 +41,13 @@ const Exercise = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+  }, []);
 
   const step = exerciseSteps[currentStep];
   const isLastStep = currentStep === exerciseSteps.length - 1;
@@ -91,19 +98,19 @@ const Exercise = () => {
   }, [completed, navigate, errors]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
-      <Snelly />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      <Snelly isSpeaking={isSpeaking} />
       
       <div className="max-w-3xl mx-auto pt-24">
-        <div className="border-8 border-foreground bg-card p-12 rounded-lg mb-8 text-center">
-          <div className="text-sm text-muted-foreground mb-4 uppercase tracking-wider">
+        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-12 rounded-2xl mb-8 text-center shadow-2xl">
+          <div className="text-sm text-accent font-bold mb-4 uppercase tracking-wider">
             Paso {currentStep + 1} de {exerciseSteps.length}
           </div>
-          <div className="text-6xl font-bold mb-4">
+          <div className="text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             {step.equation}
           </div>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground font-medium">
             Elige el siguiente paso correcto
           </p>
         </div>
