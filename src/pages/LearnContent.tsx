@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Narration from "@/components/Narration";
+import Snelly from "@/components/Snelly";
 import NavigableButton from "@/components/NavigableButton";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
@@ -80,6 +81,13 @@ const LearnContent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [narration, setNarration] = useState("");
   const [showEndOptions, setShowEndOptions] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+  }, []);
 
   const pages = levelContent[level || "1"] || levelContent["1"];
   const isLastPage = currentPage === pages.length - 1;
@@ -130,19 +138,20 @@ const LearnContent = () => {
   }, [currentPage, showEndOptions, focusedIndex]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      {!showEndOptions && <Snelly isSpeaking={isSpeaking} />}
       
       <div className="max-w-4xl mx-auto pt-24">
         {!showEndOptions ? (
           <>
-            <div className="border-8 border-foreground bg-card rounded-lg overflow-hidden mb-8">
+            <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 rounded-2xl overflow-hidden mb-8 shadow-2xl">
               {/* Book-like page */}
               <div className="p-12 min-h-[500px] flex flex-col">
-                <div className="text-sm text-muted-foreground mb-4">
+                <div className="text-sm text-muted-foreground mb-4 font-medium">
                   Página {currentPage + 1} de {pages.length}
                 </div>
-                <h2 className="text-3xl font-bold mb-6 uppercase tracking-wide">
+                <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {pages[currentPage].title}
                 </h2>
                 <div className="text-xl leading-relaxed flex-1">

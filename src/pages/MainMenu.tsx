@@ -8,6 +8,13 @@ import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 const MainMenu = () => {
   const navigate = useNavigate();
   const [narration, setNarration] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+  }, []);
 
   const menuOptions = [
     { label: "Aprender", route: "/learn", narration: "Botón Aprender." },
@@ -20,7 +27,7 @@ const MainMenu = () => {
     itemCount: menuOptions.length,
     onSelect: (index) => {
       if (index === 3) {
-        if (window.confirm("Are you sure you want to exit?")) {
+        if (window.confirm("¿Está seguro de que desea salir?")) {
           window.close();
         }
       } else {
@@ -31,24 +38,24 @@ const MainMenu = () => {
 
   useEffect(() => {
     if (focusedIndex === 0 && narration === "") {
-      setNarration("Nombre de la Aplicación. Botón Aprender.");
+      setNarration("SnailMath. Botón Aprender.");
     } else {
       setNarration(menuOptions[focusedIndex].narration);
     }
   }, [focusedIndex]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
-      <Snelly />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      <Snelly isSpeaking={isSpeaking} />
       
       <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-8 border-foreground bg-card p-12 rounded-lg mb-12">
-          <h1 className="text-6xl font-bold text-center mb-2 uppercase tracking-wider">
-            Nombre de la Aplicación
+        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-12 rounded-2xl mb-12 shadow-2xl">
+          <h1 className="text-7xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            SnailMath
           </h1>
-          <p className="text-center text-2xl text-muted-foreground">
-            [Marcador de Posición]
+          <p className="text-center text-xl text-muted-foreground font-medium">
+            Aprende ecuaciones de forma accesible
           </p>
         </div>
 

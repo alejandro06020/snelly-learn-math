@@ -10,6 +10,13 @@ const ExerciseComplete = () => {
   const location = useLocation();
   const errors = location.state?.errors || 0;
   const [narration, setNarration] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+  }, []);
 
   const options = [
     { label: "Intentar de Nuevo", route: "/exercises", narration: "Botón Intentar de Nuevo." },
@@ -33,19 +40,19 @@ const ExerciseComplete = () => {
   }, [focusedIndex, errors]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
-      <Snelly />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      <Snelly isSpeaking={isSpeaking} />
       
       <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-8 border-success p-12 rounded-lg mb-8 bg-card text-center">
-          <div className="text-7xl mb-6">✓</div>
-          <h1 className="text-5xl font-bold mb-6 uppercase tracking-wider">
+        <div className="border-4 border-success bg-gradient-to-br from-card to-success/10 p-12 rounded-2xl mb-8 text-center shadow-2xl">
+          <div className="text-8xl mb-6">✓</div>
+          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-success to-accent bg-clip-text text-transparent">
             ¡Ecuación Resuelta!
           </h1>
-          <div className="border-4 border-foreground rounded-lg p-6 bg-secondary">
-            <div className="text-4xl font-bold mb-2">x = 5</div>
-            <div className="text-xl text-muted-foreground">Resultado Final</div>
+          <div className="border-4 border-primary rounded-xl p-8 bg-gradient-to-br from-primary/5 to-accent/5">
+            <div className="text-5xl font-bold mb-2 text-primary">x = 5</div>
+            <div className="text-xl text-muted-foreground font-medium">Resultado Final</div>
           </div>
         </div>
 

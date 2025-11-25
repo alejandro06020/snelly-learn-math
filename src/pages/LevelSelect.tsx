@@ -8,6 +8,13 @@ import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 const LevelSelect = () => {
   const navigate = useNavigate();
   const [narration, setNarration] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speed, setSpeed] = useState(1.0);
+
+  useEffect(() => {
+    const savedSpeed = localStorage.getItem('narratorSpeed');
+    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+  }, []);
 
   const levels = [
     { 
@@ -48,13 +55,13 @@ const LevelSelect = () => {
   }, [focusedIndex]);
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <Narration text={narration} />
-      <Snelly />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
+      <Snelly isSpeaking={isSpeaking} />
       
       <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-foreground bg-card p-8 rounded-lg mb-8">
-          <h1 className="text-4xl font-bold text-center uppercase tracking-wider">
+        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
+          <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Elige Tu Nivel
           </h1>
         </div>
