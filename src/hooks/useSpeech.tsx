@@ -29,7 +29,7 @@ export const useSpeech = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech-ai`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
