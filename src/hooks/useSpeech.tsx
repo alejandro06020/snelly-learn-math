@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface SpeechOptions {
   voice?: string;
@@ -10,88 +10,84 @@ interface SpeechOptions {
 export const useSpeech = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    // Load available voices
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
 
   const speak = useCallback(async (text: string, options: SpeechOptions = {}) => {
     // Cancel any ongoing speech
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (utteranceRef.current) {
+      window.speechSynthesis.cancel();
+      utteranceRef.current = null;
     }
 
     if (!text.trim()) return;
 
     setIsLoading(true);
-    abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
-        },
-        body: JSON.stringify({
-          text: text,
-          speed: options.speed
-        }),
-        signal: abortControllerRef.current.signal
-      });
+      const utterance = new SpeechSynthesisUtterance(text);
+      utteranceRef.current = utterance;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      // Find Spanish voice
+      const spanishVoice = voices.find(voice => 
+        voice.lang.startsWith('es') || voice.lang.includes('ES')
+      );
       
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      // Apply speed
-      if (options.speed) {
-        audio.playbackRate = options.speed;
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
       }
 
-      audio.onloadeddata = () => {
+      utterance.lang = 'es-ES';
+      utterance.rate = options.speed || 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onstart = () => {
         setIsLoading(false);
         setIsSpeaking(true);
         options.onStart?.();
       };
 
-      audio.onended = () => {
+      utterance.onend = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
+        utteranceRef.current = null;
         options.onEnd?.();
       };
 
-      audio.onerror = () => {
+      utterance.onerror = (event) => {
+        console.error('Speech error:', event);
         setIsSpeaking(false);
         setIsLoading(false);
-        URL.revokeObjectURL(audioUrl);
+        utteranceRef.current = null;
       };
 
-      await audio.play();
+      window.speechSynthesis.speak(utterance);
     } catch (error: any) {
-      if (error.name !== 'AbortError') {
-        console.error('Speech error:', error);
-      }
+      console.error('Speech error:', error);
       setIsSpeaking(false);
       setIsLoading(false);
     }
-  }, []);
+  }, [voices]);
 
   const stop = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    if (utteranceRef.current) {
+      window.speechSynthesis.cancel();
+      utteranceRef.current = null;
     }
     setIsSpeaking(false);
     setIsLoading(false);
