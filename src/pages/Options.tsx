@@ -131,6 +131,9 @@ const Options = () => {
     if (!showConfirmation) return;
 
     const handleConfirmation = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
       if (e.key === "Enter") {
         setShowConfirmation(false);
         navigate("/");
