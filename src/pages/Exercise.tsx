@@ -14,6 +14,16 @@ interface ExerciseStep {
   }[];
 }
 
+// Convert equation to verbal format for narration
+const equationToVerbal = (equation: string): string => {
+  return equation
+    .replace(/\s*-\s*/g, ' menos ')
+    .replace(/\s*\+\s*/g, ' más ')
+    .replace(/\s*=\s*/g, ' igual ')
+    .replace(/\s*\*\s*/g, ' por ')
+    .replace(/\s*\/\s*/g, ' dividido ');
+};
+
 const exerciseSteps: ExerciseStep[] = [
   {
     equation: "3x - 7 = 8",
@@ -68,14 +78,14 @@ const Exercise = () => {
           setCurrentStep(nextStep);
           // Narrate the new equation
           setTimeout(() => {
-            setNarration(`¡Correcto! La nueva ecuación es ${exerciseSteps[nextStep].equation}`);
+            setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
           }, 500);
         }
       } else {
         // Play duck quack sound (simulated)
         console.log("🦆 Sonido de pato - ¡Incorrecto!");
         setErrors(errors + 1);
-        setNarration(`Acción incorrecta. La ecuación es ${step.equation}. Por favor, intenta de nuevo.`);
+        setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
         
         // Reset narration after a moment
         setTimeout(() => {
@@ -89,7 +99,7 @@ const Exercise = () => {
   useEffect(() => {
     if (!completed) {
       if (focusedIndex === 0 && currentStep === 0 && narration === "") {
-        setNarration(`¡Hora de ejercicios! La ecuación a resolver es ${step.equation}. Elige el siguiente paso. Acción A: ${step.actions[0].label}`);
+        setNarration(`¡Hora de ejercicios! La ecuación a resolver es ${equationToVerbal(step.equation)}. Elige el siguiente paso. Acción A: ${step.actions[0].label}`);
       } else if (!narration.includes("incorrecta")) {
         setNarration(step.actions[focusedIndex].label);
       }
@@ -144,13 +154,13 @@ const Exercise = () => {
                     setCurrentStep(nextStep);
                     // Narrate the new equation
                     setTimeout(() => {
-                      setNarration(`¡Correcto! La nueva ecuación es ${exerciseSteps[nextStep].equation}`);
+                      setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
                     }, 500);
                   }
                 } else {
                   console.log("🦆 Sonido de pato - ¡Incorrecto!");
                   setErrors(errors + 1);
-                  setNarration(`Acción incorrecta. La ecuación es ${step.equation}. Por favor, intenta de nuevo.`);
+                  setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
                   
                   setTimeout(() => {
                     setNarration(step.actions[focusedIndex].label);
