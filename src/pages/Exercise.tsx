@@ -64,18 +64,23 @@ const Exercise = () => {
         if (isLastStep) {
           setCompleted(true);
         } else {
-          setCurrentStep(currentStep + 1);
+          const nextStep = currentStep + 1;
+          setCurrentStep(nextStep);
+          // Narrate the new equation
+          setTimeout(() => {
+            setNarration(`¡Correcto! La nueva ecuación es ${exerciseSteps[nextStep].equation}`);
+          }, 500);
         }
       } else {
         // Play duck quack sound (simulated)
         console.log("🦆 Sonido de pato - ¡Incorrecto!");
         setErrors(errors + 1);
-        setNarration("Acción incorrecta. Por favor, intenta de nuevo.");
+        setNarration(`Acción incorrecta. La ecuación es ${step.equation}. Por favor, intenta de nuevo.`);
         
         // Reset narration after a moment
         setTimeout(() => {
           setNarration(step.actions[focusedIndex].label);
-        }, 2000);
+        }, 3000);
       }
     },
     enabled: !completed,
@@ -135,16 +140,21 @@ const Exercise = () => {
                   if (isLastStep) {
                     setCompleted(true);
                   } else {
-                    setCurrentStep(currentStep + 1);
+                    const nextStep = currentStep + 1;
+                    setCurrentStep(nextStep);
+                    // Narrate the new equation
+                    setTimeout(() => {
+                      setNarration(`¡Correcto! La nueva ecuación es ${exerciseSteps[nextStep].equation}`);
+                    }, 500);
                   }
                 } else {
                   console.log("🦆 Sonido de pato - ¡Incorrecto!");
                   setErrors(errors + 1);
-                  setNarration("Acción incorrecta. Por favor, intenta de nuevo.");
+                  setNarration(`Acción incorrecta. La ecuación es ${step.equation}. Por favor, intenta de nuevo.`);
                   
                   setTimeout(() => {
                     setNarration(step.actions[focusedIndex].label);
-                  }, 2000);
+                  }, 3000);
                 }
               }}
             >
