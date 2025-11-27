@@ -34,21 +34,39 @@ const Options = () => {
     setSpeed(settings.speed);
   }, [settings.speed]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState<Settings | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const getSpeedLabel = (speed: number): string => {
+    if (speed === 2.0) return "el doble";
+    if (speed === 3.0) return "el triple";
+    return `${speed}x`;
+  };
 
   const settingsList = [
     { key: "volume", label: "Volumen del Narrador", value: `${settings.volume}%`, type: "number" },
-    { key: "speed", label: "Velocidad del Narrador", value: `${settings.speed}x`, type: "number" },
+    { key: "speed", label: "Velocidad del Narrador", value: getSpeedLabel(settings.speed), type: "number" },
     { key: "enabled", label: "Activar Narrador", value: settings.enabled ? "ACTIVADO" : "DESACTIVADO", type: "toggle" },
     { key: "voice", label: "Voz del Narrador", value: settings.voice, type: "text" },
     { key: "exit", label: "Salir de Opciones", value: "", type: "action" },
   ];
 
+  const saveSettings = (newSettings: Settings) => {
+    setSettings(newSettings);
+    localStorage.setItem('narratorSpeed', newSettings.speed.toString());
+    localStorage.setItem('narratorVolume', newSettings.volume.toString());
+    localStorage.setItem('narratorEnabled', newSettings.enabled.toString());
+    setHasUnsavedChanges(false);
+  };
+
   const { focusedIndex, setItemRef } = useKeyboardNav({
     itemCount: settingsList.length,
     onSelect: (index) => {
       if (settingsList[index].key === "exit") {
-        navigate("/");
+        if (hasUnsavedChanges) {
+          setShowConfirmation(true);
+        } else {
+          navigate("/");
+        }
       }
     },
     onNext: () => {
@@ -60,14 +78,14 @@ const Options = () => {
       if (setting.key === "volume") {
         newSettings.volume = Math.min(100, settings.volume + 10);
       } else if (setting.key === "speed") {
-        newSettings.speed = Math.min(2.0, Number((settings.speed + 0.1).toFixed(1)));
+        newSettings.speed = Math.min(4.0, Number((settings.speed + 0.1).toFixed(1)));
       } else if (setting.key === "enabled") {
         newSettings.enabled = !settings.enabled;
       }
       
       if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
-        setPendingChanges(newSettings);
-        setShowConfirmation(true);
+        saveSettings(newSettings);
+        setHasUnsavedChanges(true);
       }
     },
     onPrev: () => {
@@ -85,8 +103,8 @@ const Options = () => {
       }
       
       if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
-        setPendingChanges(newSettings);
-        setShowConfirmation(true);
+        saveSettings(newSettings);
+        setHasUnsavedChanges(true);
       }
     },
     enabled: !showConfirmation,
@@ -94,7 +112,7 @@ const Options = () => {
 
   useEffect(() => {
     if (showConfirmation) {
-      setNarration("Las modificaciones serán guardadas. Presiona ENTER para aceptar. Presiona cualquier otra tecla para cancelar.");
+      setNarration("Tienes cambios sin guardar. Presiona ENTER para salir y guardar. Presiona cualquier otra tecla para volver a opciones.");
     } else {
       if (focusedIndex === 0 && narration === "") {
         setNarration(`Menú de Opciones. Volumen del Narrador: el valor actual es ${settings.volume} por ciento.`);
@@ -114,25 +132,16 @@ const Options = () => {
 
     const handleConfirmation = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
-        if (pendingChanges) {
-          setSettings(pendingChanges);
-          // Save to localStorage
-          localStorage.setItem('narratorSpeed', pendingChanges.speed.toString());
-          localStorage.setItem('narratorVolume', pendingChanges.volume.toString());
-          localStorage.setItem('narratorEnabled', pendingChanges.enabled.toString());
-        }
         setShowConfirmation(false);
-        setPendingChanges(null);
         navigate("/");
       } else {
         setShowConfirmation(false);
-        setPendingChanges(null);
       }
     };
 
     window.addEventListener("keydown", handleConfirmation);
     return () => window.removeEventListener("keydown", handleConfirmation);
-  }, [showConfirmation, pendingChanges, navigate]);
+  }, [showConfirmation, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
@@ -142,13 +151,13 @@ const Options = () => {
       {showConfirmation && (
         <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-40">
           <div className="bg-card border-4 border-primary rounded-2xl p-12 max-w-2xl shadow-2xl">
-            <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Confirmar Cambios</h2>
+            <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">¿Salir de Opciones?</h2>
             <p className="text-xl text-center mb-8 text-muted-foreground">
-              Las modificaciones serán guardadas.
+              Tienes cambios sin guardar.
             </p>
             <div className="space-y-3 text-center text-lg">
-              <p className="font-bold text-primary">Presiona ENTER para aceptar</p>
-              <p className="text-muted-foreground">Presiona cualquier otra tecla para cancelar</p>
+              <p className="font-bold text-primary">Presiona ENTER para salir y guardar</p>
+              <p className="text-muted-foreground">Presiona cualquier otra tecla para volver</p>
             </div>
           </div>
         </div>
