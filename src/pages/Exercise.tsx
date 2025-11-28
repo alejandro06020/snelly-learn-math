@@ -41,6 +41,7 @@ const Exercise = () => {
   const [narration, setNarration] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState(0);
+  const [wrongActions, setWrongActions] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
@@ -76,6 +77,7 @@ const Exercise = () => {
         // Play duck quack sound (simulated)
         console.log("🦆 Sonido de pato - ¡Incorrecto!");
         setErrors(errors + 1);
+        setWrongActions([...wrongActions, action.label]);
         setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
         
         // Reset narration after a moment
@@ -99,9 +101,9 @@ const Exercise = () => {
 
   useEffect(() => {
     if (completed) {
-      navigate("/exercise-complete", { state: { errors } });
+      navigate("/exercise-complete", { state: { errors, wrongActions } });
     }
-  }, [completed, navigate, errors]);
+  }, [completed, navigate, errors, wrongActions]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
@@ -151,6 +153,7 @@ const Exercise = () => {
                 } else {
                   console.log("🦆 Sonido de pato - ¡Incorrecto!");
                   setErrors(errors + 1);
+                  setWrongActions([...wrongActions, action.label]);
                   setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
                   
                   setTimeout(() => {
