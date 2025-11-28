@@ -33,13 +33,14 @@ const ExerciseComplete = () => {
   });
 
   useEffect(() => {
-    if (focusedIndex === 0 && narration === "") {
-      const resultadoVerbal = equationToVerbal("x = 5");
-      setNarration(`Ecuación finalizada. Resultado: ${resultadoVerbal}. Errores cometidos: ${errors}. Por favor, elige una opción. Botón Intentar de Nuevo.`);
-    } else {
-      setNarration(options[focusedIndex].narration);
-    }
-  }, [focusedIndex, errors]);
+    const resultadoVerbal = equationToVerbal("x = 5");
+    const erroresText = errors === 0 ? "sin errores" : errors === 1 ? "un error" : `${errors} errores`;
+    setNarration(`Ecuación finalizada. Resultado: ${resultadoVerbal}. Errores cometidos: ${erroresText}. Por favor, elige una opción.`);
+  }, [errors]);
+
+  useEffect(() => {
+    setNarration(options[focusedIndex].narration);
+  }, [focusedIndex]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
