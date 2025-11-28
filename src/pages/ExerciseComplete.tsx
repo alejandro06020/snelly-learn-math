@@ -20,7 +20,7 @@ const ExerciseComplete = () => {
   }, []);
 
   const options = [
-    { label: "Intentar de Nuevo", route: "/exercises", narration: "Botón Intentar de Nuevo." },
+    { label: "Volver a resolver el ejercicio", route: "/exercises", narration: "Botón Volver a resolver el ejercicio" },
     { label: "Nuevo Ejercicio", route: "/exercises", narration: "Botón Nuevo Ejercicio." },
     { label: "Menú Principal", route: "/", narration: "Botón Menú Principal." },
   ];
