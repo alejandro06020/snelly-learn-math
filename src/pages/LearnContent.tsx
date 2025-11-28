@@ -4,6 +4,7 @@ import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
 import NavigableButton from "@/components/NavigableButton";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
+import { equationToVerbal } from "@/lib/utils";
 
 interface Page {
   title: string;
@@ -21,22 +22,22 @@ const levelContent: Record<string, Page[]> = {
     {
       title: "Nuestra Ecuación de Ejemplo",
       content: "La ecuación que usaremos es: 2x + 5 = 11. Nuestro objetivo es encontrar el valor de x. Para hacer esto, necesitamos aislar x en un lado de la ecuación.",
-      narration: "Página dos: Nuestra Ecuación de Ejemplo. La ecuación que usaremos es 2x + 5 = 11. Nuestro objetivo es encontrar el valor de x. Para hacer esto, necesitamos aislar x en un lado de la ecuación."
+      narration: `Página dos: Título: Nuestra Ecuación de Ejemplo. La ecuación que usaremos es ${equationToVerbal("2x + 5 = 11")}... Nuestro objetivo es encontrar el valor de x. Para hacer esto, necesitamos aislar x en un lado de la ecuación.`
     },
     {
       title: "Paso 1: Restar 5",
       content: "Primero, restamos 5 de ambos lados: 2x + 5 - 5 = 11 - 5. Esto se simplifica a: 2x = 6. Recuerda, debemos hacer la misma operación en ambos lados para mantener el equilibrio.",
-      narration: "Página tres: Paso 1: Restar 5. Primero, restamos 5 de ambos lados: 2x + 5 - 5 = 11 - 5. Esto se simplifica a: 2x = 6. Recuerda, debemos hacer la misma operación en ambos lados para mantener el equilibrio."
+      narration: `Página tres: Paso 1: Restar 5. Primero, restamos 5 de ambos lados: ${equationToVerbal("2x + 5 - 5 = 11 - 5")}... Esto se simplifica a: ${equationToVerbal("2x = 6")}... Recuerda, debemos hacer la misma operación en ambos lados para mantener el equilibrio.`
     },
     {
       title: "Paso 2: Dividir por 2",
       content: "Ahora dividimos ambos lados por 2: 2x ÷ 2 = 6 ÷ 2. Esto nos da: x = 3. ¡Hemos aislado con éxito x y encontrado su valor!",
-      narration: "Página cuatro: Paso 2: Dividir por 2. Ahora dividimos ambos lados por 2: 2x ÷ 2 = 6 ÷ 2. Esto nos da: x = 3. ¡Hemos aislado con éxito x y encontrado su valor!"
+      narration: `Página cuatro: Paso 2: Dividir por 2. Ahora dividimos ambos lados por 2: ${equationToVerbal("2x ÷ 2 = 6 ÷ 2")}... Esto nos da: ${equationToVerbal("x = 3")}... ¡Hemos aislado con éxito x y encontrado su valor!`
     },
     {
       title: "Solución",
       content: "La solución es x = 3. Puedes verificar esto sustituyendo 3 de nuevo en la ecuación original: 2(3) + 5 = 11, lo que equivale a 6 + 5 = 11. ✓",
-      narration: "Página final: Solución. La solución es x = 3. Puedes verificar esto sustituyendo 3 de nuevo en la ecuación original: 2 por 3 más 5 es igual a 11, lo que equivale a 6 más 5 es igual a 11. ¡Correcto!"
+      narration: `Página final: Solución. La solución es ${equationToVerbal("x = 3")}... Puedes verificar esto sustituyendo 3 de nuevo en la ecuación original: 2 por 3 más 5 es igual a 11, lo que equivale a ${equationToVerbal("6 + 5 = 11")}... ¡Correcto!`
     }
   ],
   "2": [
@@ -48,29 +49,29 @@ const levelContent: Record<string, Page[]> = {
     {
       title: "Problema de Ejemplo",
       content: "Resolvamos: 3x - 7 = 8. Necesitamos aislar x utilizando operaciones inversas.",
-      narration: "Página dos: Problema de Ejemplo. Resolvamos: 3x - 7 = 8. Necesitamos aislar x utilizando operaciones inversas."
+      narration: `Página dos: Problema de Ejemplo. Resolvamos: ${equationToVerbal("3x - 7 = 8")}... Necesitamos aislar x utilizando operaciones inversas.`
     },
     {
       title: "Solución",
       content: "Sumamos 7 a ambos lados: 3x = 15. Luego dividimos ambos lados por 3: x = 5. La solución es x = 5.",
-      narration: "Página final: Solución. Sumamos 7 a ambos lados: 3x = 15. Luego dividimos ambos lados por 3: x = 5. La solución es x = 5."
+      narration: `Página final: Solución. Sumamos 7 a ambos lados: ${equationToVerbal("3x = 15")}... Luego dividimos ambos lados por 3: ${equationToVerbal("x = 5")}... La solución es ${equationToVerbal("x = 5")}.`
     }
   ],
   "3": [
     {
       title: "Variables en Ambos Lados",
       content: "A veces las ecuaciones tienen variables en ambos lados. Por ejemplo: 2x + 3 = x + 7. Para resolverlas, necesitamos llevar todas las variables a un lado.",
-      narration: "Página uno: Variables en Ambos Lados. A veces las ecuaciones tienen variables en ambos lados. Por ejemplo: 2x + 3 = x + 7. Para resolverlas, necesitamos llevar todas las variables a un lado."
+      narration: `Página uno: Variables en Ambos Lados. A veces las ecuaciones tienen variables en ambos lados. Por ejemplo: ${equationToVerbal("2x + 3 = x + 7")}... Para resolverlas, necesitamos llevar todas las variables a un lado.`
     },
     {
       title: "Estrategia de Solución",
       content: "Restamos x de ambos lados: x + 3 = 7. Luego restamos 3 de ambos lados: x = 4.",
-      narration: "Página dos: Estrategia de Solución. Restamos x de ambos lados: x + 3 = 7. Luego restamos 3 de ambos lados: x = 4."
+      narration: `Página dos: Estrategia de Solución. Restamos x de ambos lados: ${equationToVerbal("x + 3 = 7")}... Luego restamos 3 de ambos lados: ${equationToVerbal("x = 4")}.`
     },
     {
       title: "Respuesta Final",
       content: "La solución es x = 4. Siempre verifica sustituyendo de nuevo en la ecuación original.",
-      narration: "Página final: Respuesta Final. La solución es x = 4. Siempre verifica sustituyendo de nuevo en la ecuación original."
+      narration: `Página final: Respuesta Final. La solución es ${equationToVerbal("x = 4")}... Siempre verifica sustituyendo de nuevo en la ecuación original.`
     }
   ]
 };

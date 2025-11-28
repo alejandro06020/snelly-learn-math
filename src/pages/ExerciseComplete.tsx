@@ -4,6 +4,7 @@ import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
 import NavigableButton from "@/components/NavigableButton";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
+import { equationToVerbal } from "@/lib/utils";
 
 const ExerciseComplete = () => {
   const navigate = useNavigate();
@@ -33,7 +34,8 @@ const ExerciseComplete = () => {
 
   useEffect(() => {
     if (focusedIndex === 0 && narration === "") {
-      setNarration(`Ecuación finalizada. Errores cometidos: ${errors}. Por favor, elige una opción. Botón Intentar de Nuevo.`);
+      const resultadoVerbal = equationToVerbal("x = 5");
+      setNarration(`Ecuación finalizada. Resultado: ${resultadoVerbal}. Errores cometidos: ${errors}. Por favor, elige una opción. Botón Intentar de Nuevo.`);
     } else {
       setNarration(options[focusedIndex].narration);
     }

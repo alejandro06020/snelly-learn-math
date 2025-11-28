@@ -4,6 +4,7 @@ import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
 import NavigableButton from "@/components/NavigableButton";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
+import { equationToVerbal } from "@/lib/utils";
 
 interface ExerciseStep {
   equation: string;
@@ -13,16 +14,6 @@ interface ExerciseStep {
     resultEquation?: string;
   }[];
 }
-
-// Convert equation to verbal format for narration
-const equationToVerbal = (equation: string): string => {
-  return equation
-    .replace(/\s*-\s*/g, ' menos ')
-    .replace(/\s*\+\s*/g, ' más ')
-    .replace(/\s*=\s*/g, ' igual ')
-    .replace(/\s*\*\s*/g, ' por ')
-    .replace(/\s*\/\s*/g, ' dividido ');
-};
 
 const exerciseSteps: ExerciseStep[] = [
   {
