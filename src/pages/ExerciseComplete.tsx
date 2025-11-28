@@ -10,6 +10,7 @@ const ExerciseComplete = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const errors = location.state?.errors || 0;
+  const wrongActions = location.state?.wrongActions || [];
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
@@ -36,8 +37,14 @@ const ExerciseComplete = () => {
   useEffect(() => {
     const resultadoVerbal = equationToVerbal("x = 5");
     const erroresText = errors === 0 ? "sin errores" : errors === 1 ? "un error" : `${errors} errores`;
-    setNarration(`Ecuación finalizada. Resultado: ${resultadoVerbal}. Errores cometidos: ${erroresText}. Por favor, elige una opción.`);
-  }, [errors]);
+    
+    let wrongActionsText = "";
+    if (wrongActions.length > 0) {
+      wrongActionsText = ` Las acciones incorrectas fueron: ${wrongActions.join(", ")}.`;
+    }
+    
+    setNarration(`Ecuación finalizada. Resultado: ${resultadoVerbal}. Errores cometidos: ${erroresText}.${wrongActionsText} Por favor, elige una opción.`);
+  }, [errors, wrongActions]);
 
   useEffect(() => {
     if (isInitialMount.current) {
