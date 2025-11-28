@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
@@ -79,9 +79,18 @@ const levelContent: Record<string, Page[]> = {
 const LearnContent = () => {
   const { level } = useParams<{ level: string }>();
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(0);
+  
+  const storageKey = `snailmath_progress_level_${level || "1"}`;
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const savedPage = localStorage.getItem(storageKey);
+    return savedPage ? parseInt(savedPage, 10) : 0;
+  });
+
   const [narration, setNarration] = useState("");
   const [showEndOptions, setShowEndOptions] = useState(false);
+  // Nuevo estado para el índice
+  const [showIndex, setShowIndex] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
 
@@ -90,67 +99,199 @@ const LearnContent = () => {
     if (savedSpeed) setSpeed(parseFloat(savedSpeed));
   }, []);
 
-  const pages = levelContent[level || "1"] || levelContent["1"];
-  const isLastPage = currentPage === pages.length - 1;
+  useEffect(() => {
+    if (!showEndOptions) {
+      localStorage.setItem(storageKey, currentPage.toString());
+    }
+  }, [currentPage, showEndOptions, storageKey]);
 
-  const endOptions = [
+  const pages = levelContent[level || "1"] || levelContent["1"];
+  
+  // Opciones del Menú Final
+  const endOptions = useMemo(() => [
     { label: "Repetir Explicación", narration: "Botón Repetir Explicación." },
     { label: "Elegir Otro Nivel", narration: "Botón Elegir Otro Nivel." },
     { label: "Menú Principal", narration: "Botón Menú Principal." },
-  ];
+  ], []);
+
+  // Opciones del Índice
+  const indexOptions = useMemo(() => [
+    ...pages.map((p, i) => ({ 
+      label: `${i + 1}. ${p.title}`, 
+      narration: `Ir a página ${i + 1}: ${p.title}.`,
+      action: () => { setCurrentPage(i); setShowIndex(false); setShowEndOptions(false); }
+    })),
+    { 
+      label: "Salir de la Lección", 
+      narration: "Salir de la lección y volver al menú de niveles.",
+      action: () => navigate("/learn") 
+    },
+    { 
+      label: "Cerrar Índice", 
+      narration: "Cerrar menú de índice y volver a la lección.",
+      action: () => setShowIndex(false) 
+    }
+  ], [pages, navigate]);
+
+  // Determinar qué menú está activo para la navegación
+  const isIndexActive = showIndex;
+  const isEndMenuActive = showEndOptions && !showIndex;
+  const isReadingMode = !showIndex && !showEndOptions;
+
+  // Configuración dinámica del hook de teclado
+  const activeOptionsCount = isIndexActive 
+    ? indexOptions.length 
+    : (isEndMenuActive ? endOptions.length : 0);
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
-    itemCount: endOptions.length,
+    itemCount: activeOptionsCount,
     onSelect: (index) => {
-      if (index === 0) {
-        setCurrentPage(0);
-        setShowEndOptions(false);
-      } else if (index === 1) {
-        navigate("/learn");
-      } else {
-        navigate("/");
+      if (isIndexActive) {
+        // Ejecutar acción del índice
+        indexOptions[index].action();
+      } else if (isEndMenuActive) {
+        // Acciones del menú final
+        if (index === 0) {
+          setCurrentPage(0);
+          setShowEndOptions(false);
+          localStorage.setItem(storageKey, "0");
+        } else if (index === 1) {
+          navigate("/learn");
+        } else {
+          navigate("/");
+        }
       }
     },
-    onNext: !showEndOptions ? () => {
+    // Solo permitir cambio de página si estamos leyendo (no en menús)
+    onNext: isReadingMode ? () => {
       if (currentPage < pages.length - 1) {
         setCurrentPage(currentPage + 1);
       } else {
         setShowEndOptions(true);
       }
     } : undefined,
-    onPrev: !showEndOptions ? () => {
+    onPrev: isReadingMode ? () => {
       if (currentPage > 0) {
         setCurrentPage(currentPage - 1);
+      } else {
+        setNarration("Estás en la primera página.");
+        setTimeout(() => {
+          if (!isSpeaking) setNarration(pages[currentPage].narration);
+        }, 1500);
       }
     } : undefined,
     enabled: true,
   });
 
-  useEffect(() => {
+  // Helpers y Efectos
+  const getCurrentText = useCallback(() => {
+    if (showIndex) {
+      if (focusedIndex === 0 && narration.includes("Índice de navegación")) return narration;
+      return indexOptions[focusedIndex]?.narration || "";
+    }
     if (showEndOptions) {
+      if (focusedIndex === 0 && narration.includes("Explicación finalizada")) return narration;
+      return endOptions[focusedIndex]?.narration || "";
+    }
+    return pages[currentPage].narration;
+  }, [showIndex, showEndOptions, focusedIndex, narration, indexOptions, endOptions, pages, currentPage]);
+
+  const repeatNarration = () => {
+    setNarration("");
+    setTimeout(() => setNarration(getCurrentText()), 100);
+  };
+
+  // Listener para Escape (Índice) y Espacio (Repetir)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        repeatNarration();
+      } else if (e.code === "Escape") {
+        e.preventDefault();
+        setShowIndex(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [getCurrentText]);
+
+  // Efecto principal de narración
+  useEffect(() => {
+    if (showIndex) {
+      // Narración del Índice
+      if (narration === "" || !narration.includes("Índice")) {
+        // Solo anunciar apertura si acabamos de abrir
+        if (focusedIndex === 0 && !narration.includes("Ir a página")) {
+           setNarration("Índice de navegación abierto. Usa las flechas para elegir a dónde saltar o selecciona Salir.");
+        } else {
+           setNarration(indexOptions[focusedIndex]?.narration);
+        }
+      } else {
+        setNarration(indexOptions[focusedIndex]?.narration);
+      }
+    } else if (showEndOptions) {
+      // Narración Fin
       if (focusedIndex === 0 && narration === "") {
         setNarration("Explicación finalizada. Elige una opción abajo. Botón Repetir Explicación.");
       } else {
         setNarration(endOptions[focusedIndex].narration);
       }
     } else {
+      // Narración Lectura
       setNarration(pages[currentPage].narration);
     }
-  }, [currentPage, showEndOptions, focusedIndex]);
+  }, [currentPage, showEndOptions, showIndex, focusedIndex]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
       <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      {!showEndOptions && <Snelly isSpeaking={isSpeaking} />}
+      {!showEndOptions && !showIndex && <Snelly isSpeaking={isSpeaking} />}
       
-      <div className="max-w-4xl mx-auto pt-24">
+      {/* HEADER con botón de Índice/Salir */}
+      <div className="fixed top-4 right-4 z-50">
+        <button 
+          onClick={() => setShowIndex(!showIndex)}
+          className="bg-card border-2 border-primary px-4 py-2 rounded-full font-bold shadow-lg hover:bg-accent/10 text-sm"
+          aria-label="Abrir Índice y Menú de Salida"
+        >
+          {showIndex ? "Cerrar Menú (Esc)" : "Menú / Salir (Esc)"}
+        </button>
+      </div>
+
+      {/* MODAL DE ÍNDICE */}
+      {showIndex && (
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40 flex items-center justify-center p-8">
+          <div className="max-w-xl w-full">
+            <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Índice de la Lección
+            </h2>
+            <nav className="space-y-3">
+              {indexOptions.map((option, index) => (
+                <NavigableButton
+                  key={option.label}
+                  ref={setItemRef(index)}
+                  focused={focusedIndex === index}
+                  onClick={option.action}
+                  className={option.label.includes("Salir") ? "border-red-400 text-red-600 hover:bg-red-50" : ""}
+                >
+                  {option.label}
+                </NavigableButton>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* CONTENIDO PRINCIPAL (Oculto visualmente si el índice está abierto para evitar ruido) */}
+      <div className={`max-w-4xl mx-auto pt-24 transition-opacity ${showIndex ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
         {!showEndOptions ? (
           <>
             <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 rounded-2xl overflow-hidden mb-8 shadow-2xl">
-              {/* Book-like page */}
               <div className="p-12 min-h-[500px] flex flex-col">
-                <div className="text-sm text-muted-foreground mb-4 font-medium">
-                  Página {currentPage + 1} de {pages.length}
+                <div className="text-sm text-muted-foreground mb-4 font-medium flex justify-between">
+                  <span>Página {currentPage + 1} de {pages.length}</span>
+                  <span className="text-primary">Presiona ESC para el menú</span>
                 </div>
                 <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {pages[currentPage].title}
@@ -170,10 +311,11 @@ const LearnContent = () => {
             </div>
 
             <div className="p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Controles de Teclado:</p>
-              <ul className="space-y-1">
-                <li>→ Flecha Derecha - Página siguiente</li>
-                <li>← Flecha Izquierda - Página anterior{currentPage === 0 ? " (no disponible en la primera página)" : ""}</li>
+              <p className="font-medium mb-2">Controles:</p>
+              <ul className="flex flex-wrap gap-4">
+                <li>↔ Navegar</li>
+                <li>Espacio: Repetir</li>
+                <li><strong>ESC: Menú / Salir</strong></li>
               </ul>
             </div>
           </>
@@ -198,6 +340,7 @@ const LearnContent = () => {
                     if (index === 0) {
                       setCurrentPage(0);
                       setShowEndOptions(false);
+                      localStorage.setItem(storageKey, "0");
                     } else if (index === 1) {
                       navigate("/learn");
                     } else {
