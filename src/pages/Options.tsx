@@ -35,6 +35,7 @@ const Options = () => {
   }, [settings.speed]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showNarratorWarning, setShowNarratorWarning] = useState(false);
 
   const getSpeedLabel = (speed: number): string => {
     if (speed === 2.0) return "el doble";
@@ -70,7 +71,7 @@ const Options = () => {
       }
     },
     onNext: () => {
-      if (showConfirmation) return;
+      if (showConfirmation || showNarratorWarning) return;
       
       const setting = settingsList[focusedIndex];
       const newSettings = { ...settings };
@@ -80,6 +81,11 @@ const Options = () => {
       } else if (setting.key === "speed") {
         newSettings.speed = Math.min(4.0, Number((settings.speed + 0.1).toFixed(1)));
       } else if (setting.key === "enabled") {
+        // Si está activado y se va a desactivar, mostrar advertencia
+        if (settings.enabled === true) {
+          setShowNarratorWarning(true);
+          return;
+        }
         newSettings.enabled = !settings.enabled;
       }
       
@@ -89,7 +95,7 @@ const Options = () => {
       }
     },
     onPrev: () => {
-      if (showConfirmation) return;
+      if (showConfirmation || showNarratorWarning) return;
       
       const setting = settingsList[focusedIndex];
       const newSettings = { ...settings };
@@ -99,6 +105,11 @@ const Options = () => {
       } else if (setting.key === "speed") {
         newSettings.speed = Math.max(0.5, Number((settings.speed - 0.1).toFixed(1)));
       } else if (setting.key === "enabled") {
+        // Si está activado y se va a desactivar, mostrar advertencia
+        if (settings.enabled === true) {
+          setShowNarratorWarning(true);
+          return;
+        }
         newSettings.enabled = !settings.enabled;
       }
       
@@ -107,11 +118,13 @@ const Options = () => {
         setHasUnsavedChanges(true);
       }
     },
-    enabled: !showConfirmation,
+    enabled: !showConfirmation && !showNarratorWarning,
   });
 
   useEffect(() => {
-    if (showConfirmation) {
+    if (showNarratorWarning) {
+      setNarration("Advertencia. Si desactivas el narrador, no podrás escuchar instrucciones ni navegar con facilidad. Presiona ENTER para desactivar de todas formas. Presiona cualquier otra tecla para cancelar.");
+    } else if (showConfirmation) {
       setNarration("Tienes cambios sin guardar. Presiona ENTER para salir y guardar. Presiona cualquier otra tecla para volver a opciones.");
     } else {
       if (focusedIndex === 0 && narration === "") {
@@ -125,7 +138,30 @@ const Options = () => {
         }
       }
     }
-  }, [focusedIndex, showConfirmation, settings]);
+  }, [focusedIndex, showConfirmation, showNarratorWarning, settings]);
+
+  useEffect(() => {
+    if (!showNarratorWarning) return;
+
+    const handleNarratorWarning = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      if (e.key === "Enter") {
+        // Confirmar desactivación
+        const newSettings = { ...settings, enabled: false };
+        saveSettings(newSettings);
+        setHasUnsavedChanges(true);
+        setShowNarratorWarning(false);
+      } else {
+        // Cancelar
+        setShowNarratorWarning(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleNarratorWarning);
+    return () => window.removeEventListener("keydown", handleNarratorWarning);
+  }, [showNarratorWarning, settings]);
 
   useEffect(() => {
     if (!showConfirmation) return;
@@ -150,6 +186,24 @@ const Options = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
       <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
       <Snelly isSpeaking={isSpeaking} />
+      
+      {showNarratorWarning && (
+        <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-card border-4 border-destructive rounded-2xl p-12 max-w-2xl shadow-2xl">
+            <h2 className="text-4xl font-bold mb-6 text-center text-destructive">⚠️ Advertencia</h2>
+            <p className="text-xl text-center mb-6 text-foreground">
+              Si desactivas el narrador, no podrás escuchar las instrucciones ni navegar con facilidad por la aplicación.
+            </p>
+            <p className="text-lg text-center mb-8 text-muted-foreground">
+              Esta aplicación está diseñada para funcionar con el narrador activo.
+            </p>
+            <div className="space-y-3 text-center text-lg">
+              <p className="font-bold text-destructive">Presiona ENTER para desactivar de todas formas</p>
+              <p className="text-muted-foreground">Presiona cualquier otra tecla para cancelar</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       {showConfirmation && (
         <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-40">
