@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
@@ -13,6 +13,7 @@ const ExerciseComplete = () => {
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
@@ -39,6 +40,10 @@ const ExerciseComplete = () => {
   }, [errors]);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     setNarration(options[focusedIndex].narration);
   }, [focusedIndex]);
 
