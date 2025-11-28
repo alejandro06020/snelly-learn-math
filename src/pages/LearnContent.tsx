@@ -89,7 +89,6 @@ const LearnContent = () => {
 
   const [narration, setNarration] = useState("");
   const [showEndOptions, setShowEndOptions] = useState(false);
-  // Nuevo estado para el índice
   const [showIndex, setShowIndex] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
@@ -107,14 +106,35 @@ const LearnContent = () => {
 
   const pages = levelContent[level || "1"] || levelContent["1"];
   
-  // Opciones del Menú Final
+  // OPCIONES FINALES: Botones reales de navegación
   const endOptions = useMemo(() => [
-    { label: "Repetir Explicación", narration: "Botón Repetir Explicación." },
-    { label: "Elegir Otro Nivel", narration: "Botón Elegir Otro Nivel." },
-    { label: "Menú Principal", narration: "Botón Menú Principal." },
-  ], []);
+    { 
+      label: "Practicar (Ir a Ejercicios)", 
+      narration: "Botón Practicar. Ve a los ejercicios para poner a prueba lo aprendido.",
+      action: () => navigate("/exercises")
+    },
+    { 
+      label: "Repetir Explicación", 
+      narration: "Botón Repetir Explicación.",
+      action: () => {
+        setCurrentPage(0);
+        setShowEndOptions(false);
+        localStorage.setItem(storageKey, "0");
+      }
+    },
+    { 
+      label: "Elegir Otro Nivel", 
+      narration: "Botón Elegir Otro Nivel.",
+      action: () => navigate("/learn")
+    },
+    { 
+      label: "Menú Principal", 
+      narration: "Botón Menú Principal.",
+      action: () => navigate("/")
+    },
+  ], [navigate, storageKey]);
 
-  // Opciones del Índice
+  // OPCIONES DEL ÍNDICE
   const indexOptions = useMemo(() => [
     ...pages.map((p, i) => ({ 
       label: `${i + 1}. ${p.title}`, 
@@ -133,12 +153,10 @@ const LearnContent = () => {
     }
   ], [pages, navigate]);
 
-  // Determinar qué menú está activo para la navegación
   const isIndexActive = showIndex;
   const isEndMenuActive = showEndOptions && !showIndex;
   const isReadingMode = !showIndex && !showEndOptions;
 
-  // Configuración dinámica del hook de teclado
   const activeOptionsCount = isIndexActive 
     ? indexOptions.length 
     : (isEndMenuActive ? endOptions.length : 0);
@@ -147,22 +165,11 @@ const LearnContent = () => {
     itemCount: activeOptionsCount,
     onSelect: (index) => {
       if (isIndexActive) {
-        // Ejecutar acción del índice
         indexOptions[index].action();
       } else if (isEndMenuActive) {
-        // Acciones del menú final
-        if (index === 0) {
-          setCurrentPage(0);
-          setShowEndOptions(false);
-          localStorage.setItem(storageKey, "0");
-        } else if (index === 1) {
-          navigate("/learn");
-        } else {
-          navigate("/");
-        }
+        endOptions[index].action();
       }
     },
-    // Solo permitir cambio de página si estamos leyendo (no en menús)
     onNext: isReadingMode ? () => {
       if (currentPage < pages.length - 1) {
         setCurrentPage(currentPage + 1);
@@ -183,14 +190,14 @@ const LearnContent = () => {
     enabled: true,
   });
 
-  // Helpers y Efectos
   const getCurrentText = useCallback(() => {
     if (showIndex) {
       if (focusedIndex === 0 && narration.includes("Índice de navegación")) return narration;
       return indexOptions[focusedIndex]?.narration || "";
     }
     if (showEndOptions) {
-      if (focusedIndex === 0 && narration.includes("Explicación finalizada")) return narration;
+      // Si estamos en el mensaje inicial de fin de lección, devolver ese texto
+      if (focusedIndex === 0 && narration.includes("Lección completada")) return narration;
       return endOptions[focusedIndex]?.narration || "";
     }
     return pages[currentPage].narration;
@@ -201,7 +208,7 @@ const LearnContent = () => {
     setTimeout(() => setNarration(getCurrentText()), 100);
   };
 
-  // Listener para Escape (Índice) y Espacio (Repetir)
+  // Listeners de teclado (Espacio y Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
@@ -216,12 +223,10 @@ const LearnContent = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [getCurrentText]);
 
-  // Efecto principal de narración
+  // CONTROL PRINCIPAL DE NARRACIÓN
   useEffect(() => {
     if (showIndex) {
-      // Narración del Índice
       if (narration === "" || !narration.includes("Índice")) {
-        // Solo anunciar apertura si acabamos de abrir
         if (focusedIndex === 0 && !narration.includes("Ir a página")) {
            setNarration("Índice de navegación abierto. Usa las flechas para elegir a dónde saltar o selecciona Salir.");
         } else {
@@ -231,14 +236,13 @@ const LearnContent = () => {
         setNarration(indexOptions[focusedIndex]?.narration);
       }
     } else if (showEndOptions) {
-      // Narración Fin
+      // Lógica del mensaje automático al terminar
       if (focusedIndex === 0 && narration === "") {
-        setNarration("Explicación finalizada. Elige una opción abajo. Botón Repetir Explicación.");
+        setNarration("Lección completada. Has terminado la explicación. Elige una opción abajo. Botón Practicar.");
       } else {
         setNarration(endOptions[focusedIndex].narration);
       }
     } else {
-      // Narración Lectura
       setNarration(pages[currentPage].narration);
     }
   }, [currentPage, showEndOptions, showIndex, focusedIndex]);
@@ -248,7 +252,7 @@ const LearnContent = () => {
       <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
       {!showEndOptions && !showIndex && <Snelly isSpeaking={isSpeaking} />}
       
-      {/* HEADER con botón de Índice/Salir */}
+      {/* Botón flotante del menú */}
       <div className="fixed top-4 right-4 z-50">
         <button 
           onClick={() => setShowIndex(!showIndex)}
@@ -259,7 +263,7 @@ const LearnContent = () => {
         </button>
       </div>
 
-      {/* MODAL DE ÍNDICE */}
+      {/* Modal del Índice */}
       {showIndex && (
         <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40 flex items-center justify-center p-8">
           <div className="max-w-xl w-full">
@@ -283,7 +287,7 @@ const LearnContent = () => {
         </div>
       )}
 
-      {/* CONTENIDO PRINCIPAL (Oculto visualmente si el índice está abierto para evitar ruido) */}
+      {/* Contenido Principal */}
       <div className={`max-w-4xl mx-auto pt-24 transition-opacity ${showIndex ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
         {!showEndOptions ? (
           <>
@@ -321,12 +325,13 @@ const LearnContent = () => {
           </>
         ) : (
           <>
-            <div className="border-4 border-foreground bg-card p-8 rounded-lg mb-8">
-              <h2 className="text-3xl font-bold text-center mb-4 uppercase">
-                Explicación Completa
+            {/* Pantalla Final: Diseño éxito */}
+            <div className="border-4 border-green-500 bg-card p-8 rounded-lg mb-8 shadow-xl">
+              <h2 className="text-4xl font-bold text-center mb-4 text-green-600 uppercase">
+                ¡Lección Completada!
               </h2>
               <p className="text-center text-xl text-muted-foreground">
-                Elige una opción abajo
+                ¡Has hecho un gran trabajo! Elige qué hacer ahora:
               </p>
             </div>
 
@@ -336,17 +341,8 @@ const LearnContent = () => {
                   key={option.label}
                   ref={setItemRef(index)}
                   focused={focusedIndex === index}
-                  onClick={() => {
-                    if (index === 0) {
-                      setCurrentPage(0);
-                      setShowEndOptions(false);
-                      localStorage.setItem(storageKey, "0");
-                    } else if (index === 1) {
-                      navigate("/learn");
-                    } else {
-                      navigate("/");
-                    }
-                  }}
+                  onClick={option.action}
+                  className={index === 0 ? "border-green-500 bg-green-50 hover:bg-green-100" : ""}
                 >
                   {option.label}
                 </NavigableButton>
