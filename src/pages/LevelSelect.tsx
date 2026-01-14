@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
@@ -10,6 +10,7 @@ const LevelSelect = () => {
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
@@ -20,22 +21,22 @@ const LevelSelect = () => {
     { 
       label: "Nivel 1: Introducción", 
       route: "/learn/level/1",
-      narration: "Nivel 1: Introducción. Botón."
+      narration: "Nivel 1: Introducción. Aprende los conceptos básicos de ecuaciones."
     },
     { 
       label: "Nivel 2: Operaciones Básicas", 
       route: "/learn/level/2",
-      narration: "Nivel 2: Operaciones Básicas. Botón."
+      narration: "Nivel 2: Operaciones Básicas. Practica con suma, resta, multiplicación y división."
     },
     { 
       label: "Nivel 3: Variables en Ambos Lados", 
       route: "/learn/level/3",
-      narration: "Nivel 3: Variables en Ambos Lados. Botón."
+      narration: "Nivel 3: Variables en Ambos Lados. Resuelve ecuaciones más complejas."
     },
     { 
       label: "Volver al Menú Principal", 
-      route: "/",
-      narration: "Volver al Menú Principal. Botón."
+      route: "/menu",
+      narration: "Volver al Menú Principal."
     },
   ];
 
@@ -47,26 +48,30 @@ const LevelSelect = () => {
   });
 
   useEffect(() => {
-    if (focusedIndex === 0 && narration === "") {
-      setNarration("Elige Tu Nivel. Nivel 1: Introducción. Botón.");
-    } else {
-      setNarration(levels[focusedIndex].narration);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      setNarration("Elige Tu Nivel de Aprendizaje. " + levels[0].narration);
+      return;
     }
+    setNarration(levels[focusedIndex].narration);
   }, [focusedIndex]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
       <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
       <Snelly isSpeaking={isSpeaking} />
       
       <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
+        <header className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
           <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Elige Tu Nivel
           </h1>
-        </div>
+          <p className="text-center text-muted-foreground mt-4">
+            Selecciona el nivel de dificultad para comenzar
+          </p>
+        </header>
 
-        <nav className="space-y-4" role="navigation" aria-label="Level selection">
+        <nav className="space-y-4" role="navigation" aria-label="Selección de nivel">
           {levels.map((level, index) => (
             <NavigableButton
               key={level.label}
@@ -79,15 +84,15 @@ const LevelSelect = () => {
           ))}
         </nav>
 
-        <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Controles de Teclado:</p>
-          <ul className="space-y-1">
-            <li>↑↓ Flechas o Tab - Navegar opciones</li>
-            <li>Enter - Seleccionar nivel</li>
+        <aside className="mt-8 p-4 border-2 border-border bg-muted rounded-lg text-sm text-muted-foreground" aria-label="Controles">
+          <h2 className="font-semibold mb-3 text-foreground">Controles de Teclado:</h2>
+          <ul className="space-y-2">
+            <li><kbd className="px-2 py-1 bg-background rounded border">↑↓</kbd> o <kbd className="px-2 py-1 bg-background rounded border">Tab</kbd> Navegar opciones</li>
+            <li><kbd className="px-2 py-1 bg-background rounded border">Enter</kbd> Seleccionar nivel</li>
           </ul>
-        </div>
+        </aside>
       </div>
-    </div>
+    </main>
   );
 };
 

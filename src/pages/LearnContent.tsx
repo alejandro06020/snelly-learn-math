@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
@@ -79,6 +79,7 @@ const levelContent: Record<string, Page[]> = {
 const LearnContent = () => {
   const { level } = useParams<{ level: string }>();
   const navigate = useNavigate();
+  const isInitialMount = useRef(true);
   
   const storageKey = `snailmath_progress_level_${level || "1"}`;
 
@@ -106,7 +107,6 @@ const LearnContent = () => {
 
   const pages = levelContent[level || "1"] || levelContent["1"];
   
-  // OPCIONES FINALES: Botones reales de navegación
   const endOptions = useMemo(() => [
     { 
       label: "Practicar (Ir a Ejercicios)", 
@@ -130,16 +130,19 @@ const LearnContent = () => {
     { 
       label: "Menú Principal", 
       narration: "Botón Menú Principal.",
-      action: () => navigate("/")
+      action: () => navigate("/menu")
     },
   ], [navigate, storageKey]);
 
-  // OPCIONES DEL ÍNDICE
   const indexOptions = useMemo(() => [
     ...pages.map((p, i) => ({ 
       label: `${i + 1}. ${p.title}`, 
       narration: `Ir a página ${i + 1}: ${p.title}.`,
-      action: () => { setCurrentPage(i); setShowIndex(false); setShowEndOptions(false); }
+      action: () => { 
+        setCurrentPage(i); 
+        setShowIndex(false); 
+        setShowEndOptions(false); 
+      }
     })),
     { 
       label: "Salir de la Lección", 
@@ -149,9 +152,15 @@ const LearnContent = () => {
     { 
       label: "Cerrar Índice", 
       narration: "Cerrar menú de índice y volver a la lección.",
-      action: () => setShowIndex(false) 
+      action: () => {
+        setShowIndex(false);
+        // Volver a narrar la página actual después de cerrar
+        setTimeout(() => {
+          setNarration(pages[currentPage].narration);
+        }, 100);
+      }
     }
-  ], [pages, navigate]);
+  ], [pages, navigate, currentPage]);
 
   const isIndexActive = showIndex;
   const isEndMenuActive = showEndOptions && !showIndex;
@@ -161,7 +170,7 @@ const LearnContent = () => {
     ? indexOptions.length 
     : (isEndMenuActive ? endOptions.length : 0);
 
-  const { focusedIndex, setItemRef } = useKeyboardNav({
+  const { focusedIndex, setItemRef, setFocusedIndex } = useKeyboardNav({
     itemCount: activeOptionsCount,
     onSelect: (index) => {
       if (isIndexActive) {
@@ -175,6 +184,7 @@ const LearnContent = () => {
         setCurrentPage(currentPage + 1);
       } else {
         setShowEndOptions(true);
+        setFocusedIndex(0);
       }
     } : undefined,
     onPrev: isReadingMode ? () => {
@@ -183,30 +193,25 @@ const LearnContent = () => {
       } else {
         setNarration("Estás en la primera página.");
         setTimeout(() => {
-          if (!isSpeaking) setNarration(pages[currentPage].narration);
+          setNarration(pages[currentPage].narration);
         }, 1500);
       }
     } : undefined,
     enabled: true,
   });
 
-  const getCurrentText = useCallback(() => {
+  const repeatNarration = useCallback(() => {
     if (showIndex) {
-      if (focusedIndex === 0 && narration.includes("Índice de navegación")) return narration;
-      return indexOptions[focusedIndex]?.narration || "";
+      setNarration("");
+      setTimeout(() => setNarration(indexOptions[focusedIndex]?.narration || ""), 100);
+    } else if (showEndOptions) {
+      setNarration("");
+      setTimeout(() => setNarration(endOptions[focusedIndex]?.narration || ""), 100);
+    } else {
+      setNarration("");
+      setTimeout(() => setNarration(pages[currentPage].narration), 100);
     }
-    if (showEndOptions) {
-      // Si estamos en el mensaje inicial de fin de lección, devolver ese texto
-      if (focusedIndex === 0 && narration.includes("Lección completada")) return narration;
-      return endOptions[focusedIndex]?.narration || "";
-    }
-    return pages[currentPage].narration;
-  }, [showIndex, showEndOptions, focusedIndex, narration, indexOptions, endOptions, pages, currentPage]);
-
-  const repeatNarration = () => {
-    setNarration("");
-    setTimeout(() => setNarration(getCurrentText()), 100);
-  };
+  }, [showIndex, showEndOptions, focusedIndex, indexOptions, endOptions, pages, currentPage]);
 
   // Listeners de teclado (Espacio y Escape)
   useEffect(() => {
@@ -216,48 +221,59 @@ const LearnContent = () => {
         repeatNarration();
       } else if (e.code === "Escape") {
         e.preventDefault();
-        setShowIndex(prev => !prev);
+        if (showIndex) {
+          setShowIndex(false);
+          setTimeout(() => setNarration(pages[currentPage].narration), 100);
+        } else {
+          setShowIndex(true);
+          setFocusedIndex(0);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [getCurrentText]);
+  }, [repeatNarration, showIndex, pages, currentPage, setFocusedIndex]);
 
   // CONTROL PRINCIPAL DE NARRACIÓN
   useEffect(() => {
     if (showIndex) {
-      if (narration === "" || !narration.includes("Índice")) {
-        if (focusedIndex === 0 && !narration.includes("Ir a página")) {
-           setNarration("Índice de navegación abierto. Usa las flechas para elegir a dónde saltar o selecciona Salir.");
-        } else {
-           setNarration(indexOptions[focusedIndex]?.narration);
-        }
+      if (isInitialMount.current || focusedIndex === 0) {
+        setNarration("Índice de navegación abierto. " + indexOptions[focusedIndex]?.narration);
+        isInitialMount.current = false;
       } else {
-        setNarration(indexOptions[focusedIndex]?.narration);
+        setNarration(indexOptions[focusedIndex]?.narration || "");
       }
     } else if (showEndOptions) {
-      // Lógica del mensaje automático al terminar
-      if (focusedIndex === 0 && narration === "") {
-        setNarration("Lección completada. Has terminado la explicación. Elige una opción abajo. Botón Practicar.");
+      if (focusedIndex === 0) {
+        setNarration("Lección completada. Has terminado la explicación. Elige una opción. " + endOptions[focusedIndex].narration);
       } else {
         setNarration(endOptions[focusedIndex].narration);
       }
     } else {
       setNarration(pages[currentPage].narration);
     }
-  }, [currentPage, showEndOptions, showIndex, focusedIndex]);
+  }, [currentPage, showEndOptions, showIndex, focusedIndex, pages, indexOptions, endOptions]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
       <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
       {!showEndOptions && !showIndex && <Snelly isSpeaking={isSpeaking} />}
       
       {/* Botón flotante del menú */}
       <div className="fixed top-4 right-4 z-50">
         <button 
-          onClick={() => setShowIndex(!showIndex)}
-          className="bg-card border-2 border-primary px-4 py-2 rounded-full font-bold shadow-lg hover:bg-accent/10 text-sm"
-          aria-label="Abrir Índice y Menú de Salida"
+          onClick={() => {
+            if (showIndex) {
+              setShowIndex(false);
+              setTimeout(() => setNarration(pages[currentPage].narration), 100);
+            } else {
+              setShowIndex(true);
+              setFocusedIndex(0);
+            }
+          }}
+          className="bg-card border-2 border-primary px-4 py-2 rounded-full font-bold shadow-lg hover:bg-accent/10 text-sm focus:outline-none focus:ring-4 focus:ring-focus-ring"
+          aria-label={showIndex ? "Cerrar índice" : "Abrir índice y menú"}
+          aria-expanded={showIndex}
         >
           {showIndex ? "Cerrar Menú (Esc)" : "Menú / Salir (Esc)"}
         </button>
@@ -265,19 +281,27 @@ const LearnContent = () => {
 
       {/* Modal del Índice */}
       {showIndex && (
-        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40 flex items-center justify-center p-8">
+        <div 
+          className="fixed inset-0 bg-background/95 backdrop-blur-sm z-40 flex items-center justify-center p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="index-title"
+        >
           <div className="max-w-xl w-full">
-            <h2 className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 
+              id="index-title"
+              className="text-4xl font-bold text-center mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+            >
               Índice de la Lección
             </h2>
-            <nav className="space-y-3">
+            <nav className="space-y-3" role="navigation" aria-label="Índice de páginas">
               {indexOptions.map((option, index) => (
                 <NavigableButton
                   key={option.label}
                   ref={setItemRef(index)}
                   focused={focusedIndex === index}
                   onClick={option.action}
-                  className={option.label.includes("Salir") ? "border-red-400 text-red-600 hover:bg-red-50" : ""}
+                  className={option.label.includes("Salir") ? "border-destructive/50 hover:bg-destructive/5" : ""}
                 >
                   {option.label}
                 </NavigableButton>
@@ -288,13 +312,15 @@ const LearnContent = () => {
       )}
 
       {/* Contenido Principal */}
-      <div className={`max-w-4xl mx-auto pt-24 transition-opacity ${showIndex ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
+      <article className={`max-w-4xl mx-auto pt-24 transition-opacity ${showIndex ? 'opacity-20 pointer-events-none' : 'opacity-100'}`}>
         {!showEndOptions ? (
           <>
-            <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 rounded-2xl overflow-hidden mb-8 shadow-2xl">
+            <section className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 rounded-2xl overflow-hidden mb-8 shadow-2xl">
               <div className="p-12 min-h-[500px] flex flex-col">
                 <div className="text-sm text-muted-foreground mb-4 font-medium flex justify-between">
-                  <span>Página {currentPage + 1} de {pages.length}</span>
+                  <span aria-label={`Página ${currentPage + 1} de ${pages.length}`}>
+                    Página {currentPage + 1} de {pages.length}
+                  </span>
                   <span className="text-primary">Presiona ESC para el menú</span>
                 </div>
                 <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -312,37 +338,36 @@ const LearnContent = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-              <p className="font-medium mb-2">Controles:</p>
+            <aside className="p-4 border-2 border-border bg-muted rounded-lg text-sm text-muted-foreground" aria-label="Controles">
+              <h3 className="font-semibold mb-2 text-foreground">Controles:</h3>
               <ul className="flex flex-wrap gap-4">
-                <li>↔ Navegar</li>
-                <li>Espacio: Repetir</li>
-                <li><strong>ESC: Menú / Salir</strong></li>
+                <li><kbd className="px-2 py-1 bg-background rounded border">← →</kbd> Navegar</li>
+                <li><kbd className="px-2 py-1 bg-background rounded border">Espacio</kbd> Repetir</li>
+                <li><kbd className="px-2 py-1 bg-background rounded border">ESC</kbd> Menú</li>
               </ul>
-            </div>
+            </aside>
           </>
         ) : (
           <>
-            {/* Pantalla Final: Diseño éxito */}
-            <div className="border-4 border-green-500 bg-card p-8 rounded-lg mb-8 shadow-xl">
-              <h2 className="text-4xl font-bold text-center mb-4 text-green-600 uppercase">
+            <section className="border-4 border-green-500 bg-card p-8 rounded-2xl mb-8 shadow-xl">
+              <h2 className="text-4xl font-bold text-center mb-4 text-green-600">
                 ¡Lección Completada!
               </h2>
               <p className="text-center text-xl text-muted-foreground">
                 ¡Has hecho un gran trabajo! Elige qué hacer ahora:
               </p>
-            </div>
+            </section>
 
-            <nav className="space-y-4">
+            <nav className="space-y-4" role="navigation" aria-label="Opciones de finalización">
               {endOptions.map((option, index) => (
                 <NavigableButton
                   key={option.label}
                   ref={setItemRef(index)}
                   focused={focusedIndex === index}
                   onClick={option.action}
-                  className={index === 0 ? "border-green-500 bg-green-50 hover:bg-green-100" : ""}
+                  className={index === 0 ? "border-green-500/50 bg-green-50/10 hover:bg-green-500/10" : ""}
                 >
                   {option.label}
                 </NavigableButton>
@@ -350,8 +375,8 @@ const LearnContent = () => {
             </nav>
           </>
         )}
-      </div>
-    </div>
+      </article>
+    </main>
   );
 };
 
