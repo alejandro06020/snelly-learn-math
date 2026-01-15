@@ -1,51 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  Design System based on Nielsen's Heuristics:
+  1. Visibility of system status - Clear feedback states
+  2. Match between system and real world - Friendly, approachable language
+  3. User control and freedom - Clear navigation, escape routes
+  4. Consistency and standards - Unified component patterns
+  5. Error prevention - Clear affordances
+  6. Recognition rather than recall - Visual cues everywhere
+  7. Flexibility and efficiency - Works for all users
+  8. Aesthetic and minimalist design - Clean, focused interface
+  9. Help users recognize errors - Clear error states
+  10. Help and documentation - Contextual guidance
 */
 
 @layer base {
   :root {
-    /* High-fidelity colorful design system */
-    --background: 210 40% 96%;
-    --foreground: 222 47% 11%;
+    /* Modern educational color palette - warm and inviting */
+    --background: 220 20% 97%;
+    --foreground: 220 30% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 30% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 30% 15%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Vibrant blue - trust, learning */
+    --primary: 230 85% 55%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 90%;
-    --secondary-foreground: 222 47% 11%;
+    /* Secondary: Soft lavender */
+    --secondary: 250 30% 94%;
+    --secondary-foreground: 220 30% 15%;
 
-    --muted: 210 40% 92%;
-    --muted-foreground: 215 16% 47%;
+    /* Muted: Subtle gray-blue */
+    --muted: 220 15% 92%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 142 76% 36%;
+    /* Accent: Energetic green for success/progress */
+    --accent: 155 70% 40%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive: Warm red */
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    /* Borders and inputs */
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 230 85% 55%;
 
-    /* Focus state for accessibility */
-    --focus: 221 83% 53%;
-    --focus-ring: 221 83% 53%;
+    /* Focus states - high visibility for accessibility */
+    --focus: 230 85% 55%;
+    --focus-ring: 230 85% 60%;
 
-    /* Success and error states */
-    --success: 142 76% 36%;
-    --error: 0 84% 60%;
+    /* Semantic colors */
+    --success: 155 70% 40%;
+    --success-light: 155 70% 95%;
+    --warning: 40 95% 50%;
+    --warning-light: 40 95% 95%;
+    --error: 0 75% 55%;
+    --error-light: 0 75% 95%;
+    --info: 200 85% 50%;
+    --info-light: 200 85% 95%;
 
-    --radius: 0.75rem;
+    /* Interactive states */
+    --hover: 230 85% 50%;
+    --active: 230 85% 45%;
+    --disabled: 220 10% 70%;
+
+    --radius: 1rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 30% 15% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(220 30% 15% / 0.1), 0 2px 4px -2px hsl(220 30% 15% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(220 30% 15% / 0.1), 0 4px 6px -4px hsl(220 30% 15% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(220 30% 15% / 0.1), 0 8px 10px -6px hsl(220 30% 15% / 0.1);
+    --shadow-focus: 0 0 0 4px hsl(230 85% 55% / 0.25);
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 220 15% 95%;
+    --card: 220 25% 14%;
+    --card-foreground: 220 15% 95%;
+    --popover: 220 25% 14%;
+    --popover-foreground: 220 15% 95%;
+    --primary: 230 85% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 25% 20%;
+    --secondary-foreground: 220 15% 95%;
+    --muted: 220 25% 18%;
+    --muted-foreground: 220 15% 60%;
+    --accent: 155 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 25% 22%;
+    --input: 220 25% 22%;
+    --ring: 230 85% 60%;
+    --focus: 230 85% 60%;
+    --focus-ring: 230 85% 65%;
   }
 }
 
@@ -54,7 +114,152 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    @apply font-bold tracking-tight;
+  }
+
+  /* Improved focus visibility for accessibility */
+  :focus-visible {
+    @apply outline-none ring-4 ring-focus-ring/40;
+  }
+
+  /* Skip link for keyboard users */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg;
+  }
+
+  /* Keyboard indicator */
+  kbd {
+    @apply inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-muted text-muted-foreground border border-border rounded shadow-sm;
+    font-family: 'Inter', monospace;
+  }
+}
+
+@layer components {
+  /* Page container with consistent padding */
+  .page-container {
+    @apply min-h-screen px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* Content wrapper with max-width */
+  .content-wrapper {
+    @apply max-w-3xl mx-auto w-full;
+  }
+
+  /* Card component */
+  .ui-card {
+    @apply bg-card rounded-2xl border border-border shadow-lg p-6 sm:p-8;
+  }
+
+  /* Hero card with gradient */
+  .hero-card {
+    @apply bg-gradient-to-br from-card via-card to-primary/5 rounded-2xl border-2 border-primary/20 shadow-xl p-8 sm:p-12;
+  }
+
+  /* Interactive button base */
+  .btn-interactive {
+    @apply relative w-full p-4 sm:p-5 text-left rounded-xl border-2 border-border bg-card transition-all duration-200;
+    @apply hover:border-primary/50 hover:shadow-md hover:bg-primary/5;
+    @apply focus:outline-none focus:ring-4 focus:ring-focus-ring/40 focus:border-primary;
+    @apply active:scale-[0.98];
+  }
+
+  .btn-interactive.focused {
+    @apply border-primary bg-primary/10 shadow-lg ring-4 ring-focus-ring/40;
+  }
+
+  /* Status badge */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium rounded-full;
+  }
+
+  .status-badge.success {
+    @apply bg-success/10 text-success;
+  }
+
+  .status-badge.warning {
+    background-color: hsl(var(--warning) / 0.1);
+    color: hsl(var(--warning));
+  }
+
+  .status-badge.error {
+    @apply bg-error/10 text-error;
+  }
+
+  .status-badge.info {
+    background-color: hsl(var(--info) / 0.1);
+    color: hsl(var(--info));
+  }
+
+  /* Progress indicator */
+  .progress-dot {
+    @apply w-2.5 h-2.5 rounded-full bg-border transition-all duration-300;
+  }
+
+  .progress-dot.active {
+    @apply w-8 bg-primary;
+  }
+
+  .progress-dot.completed {
+    @apply bg-primary/50;
+  }
+
+  /* Keyboard controls helper */
+  .controls-helper {
+    @apply p-4 bg-muted/50 rounded-xl border border-border/50;
+  }
+}
+
+@layer utilities {
+  /* Text gradient */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-scale-in {
+      animation: none;
+    }
   }
 }
