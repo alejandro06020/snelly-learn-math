@@ -34,16 +34,22 @@ const ExerciseComplete = () => {
     },
   });
 
+  // Efecto principal para la narración de resultados
   useEffect(() => {
     const resultadoVerbal = equationToVerbal("x = 5");
-    const erroresText = errors === 0 ? "sin errores" : errors === 1 ? "un error" : `${errors} errores`;
+    const erroresText = errors === 1 ? "un error" : `${errors} errores`;
+    
+    // Lógica condicional solicitada
+    const seccionErrores = errors > 0 
+      ? ` Durante el proceso, cometiste ${erroresText}.` 
+      : " ¡Lo hiciste sin errores!";
     
     let wrongActionsText = "";
     if (wrongActions.length > 0) {
       wrongActionsText = ` Las acciones incorrectas fueron: ${wrongActions.join(", ")}.`;
     }
     
-    setNarration(`¡Ecuación finalizada! Resultado: ${resultadoVerbal}. Errores cometidos: ${erroresText}.${wrongActionsText} Por favor, elige una opción.`);
+    setNarration(`¡Ecuación finalizada! Resultado: ${resultadoVerbal}.${seccionErrores}${wrongActionsText} Por favor, elige una opción.`);
   }, [errors, wrongActions]);
 
   useEffect(() => {
