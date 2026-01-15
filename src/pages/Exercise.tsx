@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
-import NavigableButton from "@/components/NavigableButton";
+import { AlertTriangle } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import HeroSection from "@/components/ui/HeroSection";
+import MenuButton from "@/components/ui/MenuButton";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
+import StatCard from "@/components/ui/StatCard";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 import { equationToVerbal } from "@/lib/utils";
 
@@ -45,6 +48,8 @@ const Exercise = () => {
   const [completed, setCompleted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
@@ -54,50 +59,49 @@ const Exercise = () => {
   const step = exerciseSteps[currentStep];
   const isLastStep = currentStep === exerciseSteps.length - 1;
 
+  const handleAction = (index: number) => {
+    const action = step.actions[index];
+    
+    if (action.correct) {
+      setFeedback("correct");
+      setTimeout(() => setFeedback(null), 1000);
+      
+      if (isLastStep) {
+        setCompleted(true);
+      } else {
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        setTimeout(() => {
+          setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
+        }, 500);
+      }
+    } else {
+      setFeedback("incorrect");
+      setTimeout(() => setFeedback(null), 1000);
+      setErrors(errors + 1);
+      setWrongActions([...wrongActions, action.label]);
+      setNarration(`Incorrecto. Intenta de nuevo. La ecuación es ${equationToVerbal(step.equation)}.`);
+    }
+  };
+
   const { focusedIndex, setItemRef } = useKeyboardNav({
     itemCount: step.actions.length,
-    onSelect: (index) => {
-      const action = step.actions[index];
-      
-      if (action.correct) {
-        // Play bell sound (simulated)
-        console.log("🔔 Sonido de campana - ¡Correcto!");
-        
-        if (isLastStep) {
-          setCompleted(true);
-        } else {
-          const nextStep = currentStep + 1;
-          setCurrentStep(nextStep);
-          // Narrate the new equation
-          setTimeout(() => {
-            setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
-          }, 500);
-        }
-      } else {
-        // Play duck quack sound (simulated)
-        console.log("🦆 Sonido de pato - ¡Incorrecto!");
-        setErrors(errors + 1);
-        setWrongActions([...wrongActions, action.label]);
-        setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
-        
-        // Reset narration after a moment
-        setTimeout(() => {
-          setNarration(step.actions[focusedIndex].label);
-        }, 3000);
-      }
-    },
+    onSelect: handleAction,
     enabled: !completed,
   });
 
   useEffect(() => {
     if (!completed) {
-      if (focusedIndex === 0 && currentStep === 0 && narration === "") {
-        setNarration(`¡Hora de ejercicios! La ecuación a resolver es ${equationToVerbal(step.equation)}. Elige el siguiente paso. Acción A: ${step.actions[0].label}`);
-      } else if (!narration.includes("incorrecta")) {
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        setNarration(`Ejercicio. Resuelve la ecuación ${equationToVerbal(step.equation)}. Primera opción: ${step.actions[0].label}`);
+        return;
+      }
+      if (!feedback) {
         setNarration(step.actions[focusedIndex].label);
       }
     }
-  }, [focusedIndex, currentStep, completed]);
+  }, [focusedIndex, currentStep, completed, feedback]);
 
   useEffect(() => {
     if (completed) {
@@ -105,80 +109,75 @@ const Exercise = () => {
     }
   }, [completed, navigate, errors, wrongActions]);
 
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Enter"], action: "Seleccionar respuesta" },
+  ];
+
+  // Visual feedback overlay
+  const feedbackStyles = {
+    correct: "ring-4 ring-success/50 bg-success/5",
+    incorrect: "ring-4 ring-error/50 bg-error/5 animate-shake",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      <div className="max-w-3xl mx-auto pt-24">
-        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-12 rounded-2xl mb-8 text-center shadow-2xl">
-          <div className="text-sm text-accent font-bold mb-4 uppercase tracking-wider">
-            Paso {currentStep + 1} de {exerciseSteps.length}
+    <PageLayout
+      narration={narration}
+      speed={speed}
+      onSpeakingChange={setIsSpeaking}
+      isSpeaking={isSpeaking}
+    >
+      <div className="pt-8 sm:pt-12">
+        {/* Progress and Stats Bar */}
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">
+              Paso {currentStep + 1} de {exerciseSteps.length}
+            </span>
           </div>
-          <div className="text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <StatCard 
+            label="Errores" 
+            value={errors} 
+            variant={errors > 0 ? "error" : "default"}
+            icon={<AlertTriangle className="w-5 h-5" />}
+          />
+        </div>
+
+        {/* Equation Display */}
+        <div className={`hero-card text-center mb-8 transition-all duration-300 ${feedback ? feedbackStyles[feedback] : ''}`}>
+          <p className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+            Resuelve la ecuación
+          </p>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display">
             {step.equation}
-          </div>
-          <p className="text-xl text-muted-foreground font-medium">
+          </h1>
+          <p className="text-lg text-muted-foreground mt-4">
             Elige el siguiente paso correcto
           </p>
         </div>
 
-        <div className="mb-8 p-4 border-2 border-border bg-card rounded">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-medium">Errores Actuales:</span>
-            <span className="text-3xl font-bold">{errors}</span>
-          </div>
-        </div>
-
-        <nav className="space-y-4" role="navigation" aria-label="Exercise actions">
+        {/* Answer Options */}
+        <nav className="space-y-3" role="navigation" aria-label="Opciones de respuesta">
           {step.actions.map((action, index) => (
-            <NavigableButton
+            <MenuButton
               key={index}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
-              onClick={() => {
-                if (action.correct) {
-                  console.log("🔔 Sonido de campana - ¡Correcto!");
-                  
-                  if (isLastStep) {
-                    setCompleted(true);
-                  } else {
-                    const nextStep = currentStep + 1;
-                    setCurrentStep(nextStep);
-                    // Narrate the new equation
-                    setTimeout(() => {
-                      setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
-                    }, 500);
-                  }
-                } else {
-                  console.log("🦆 Sonido de pato - ¡Incorrecto!");
-                  setErrors(errors + 1);
-                  setWrongActions([...wrongActions, action.label]);
-                  setNarration(`Acción incorrecta. La ecuación es ${equationToVerbal(step.equation)}. Por favor, intenta de nuevo.`);
-                  
-                  setTimeout(() => {
-                    setNarration(step.actions[focusedIndex].label);
-                  }, 3000);
-                }
-              }}
+              onClick={() => handleAction(index)}
             >
-              Acción {String.fromCharCode(65 + index)}: {action.label}
-            </NavigableButton>
+              <span className="flex items-center gap-3">
+                <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
+                  {String.fromCharCode(65 + index)}
+                </span>
+                <span>{action.label}</span>
+              </span>
+            </MenuButton>
           ))}
         </nav>
 
-        <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Controles de Teclado:</p>
-          <ul className="space-y-1">
-            <li>↑↓ Flechas o Tab - Navegar acciones</li>
-            <li>Enter - Seleccionar acción</li>
-          </ul>
-          <p className="mt-3 text-xs">
-            🔔 Sonido de campana = Correcto | 🦆 Sonido de pato = Incorrecto
-          </p>
-        </div>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

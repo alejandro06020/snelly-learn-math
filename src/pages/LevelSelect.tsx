@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
-import NavigableButton from "@/components/NavigableButton";
+import { GraduationCap, BookOpen, BrainCircuit, ArrowLeft } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import HeroSection from "@/components/ui/HeroSection";
+import MenuButton from "@/components/ui/MenuButton";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 const LevelSelect = () => {
@@ -10,32 +12,59 @@ const LevelSelect = () => {
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
     if (savedSpeed) setSpeed(parseFloat(savedSpeed));
   }, []);
 
+  // Get completed levels from localStorage
+  const getCompletedLevels = () => {
+    const completed: string[] = [];
+    for (let i = 1; i <= 3; i++) {
+      const progress = localStorage.getItem(`snailmath_progress_level_${i}`);
+      if (progress) {
+        completed.push(i.toString());
+      }
+    }
+    return completed;
+  };
+
+  const completedLevels = getCompletedLevels();
+
   const levels = [
     { 
-      label: "Nivel 1: Introducción", 
+      id: "1",
+      label: "Introducción a Ecuaciones", 
+      description: "Conceptos básicos y tu primera ecuación",
       route: "/learn/level/1",
-      narration: "Nivel 1: Introducción. Botón."
+      narration: "Nivel 1: Introducción. Aprende los conceptos básicos de ecuaciones.",
+      icon: <GraduationCap className="w-6 h-6" />
     },
     { 
-      label: "Nivel 2: Operaciones Básicas", 
+      id: "2",
+      label: "Operaciones Básicas", 
+      description: "Suma, resta, multiplicación y división",
       route: "/learn/level/2",
-      narration: "Nivel 2: Operaciones Básicas. Botón."
+      narration: "Nivel 2: Operaciones Básicas. Practica con las cuatro operaciones.",
+      icon: <BookOpen className="w-6 h-6" />
     },
     { 
-      label: "Nivel 3: Variables en Ambos Lados", 
+      id: "3",
+      label: "Variables en Ambos Lados", 
+      description: "Ecuaciones más avanzadas",
       route: "/learn/level/3",
-      narration: "Nivel 3: Variables en Ambos Lados. Botón."
+      narration: "Nivel 3: Variables en Ambos Lados. Resuelve ecuaciones complejas.",
+      icon: <BrainCircuit className="w-6 h-6" />
     },
     { 
-      label: "Volver al Menú Principal", 
-      route: "/",
-      narration: "Volver al Menú Principal. Botón."
+      id: "back",
+      label: "Volver al Menú", 
+      description: "",
+      route: "/menu",
+      narration: "Volver al Menú Principal.",
+      icon: <ArrowLeft className="w-6 h-6" />
     },
   ];
 
@@ -47,47 +76,59 @@ const LevelSelect = () => {
   });
 
   useEffect(() => {
-    if (focusedIndex === 0 && narration === "") {
-      setNarration("Elige Tu Nivel. Nivel 1: Introducción. Botón.");
-    } else {
-      setNarration(levels[focusedIndex].narration);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      setNarration("Selección de Nivel. " + levels[0].narration);
+      return;
     }
+    setNarration(levels[focusedIndex].narration);
   }, [focusedIndex]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
-          <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Elige Tu Nivel
-          </h1>
-        </div>
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar niveles" },
+    { keys: ["Enter"], action: "Seleccionar nivel" },
+  ];
 
-        <nav className="space-y-4" role="navigation" aria-label="Level selection">
+  const getLevelStatus = (levelId: string) => {
+    if (levelId === "back") return "default";
+    if (completedLevels.includes(levelId)) return "completed" as const;
+    return "default" as const;
+  };
+
+  return (
+    <PageLayout
+      narration={narration}
+      speed={speed}
+      onSpeakingChange={setIsSpeaking}
+      isSpeaking={isSpeaking}
+    >
+      <div className="pt-8 sm:pt-16">
+        <HeroSection
+          title="Elige Tu Nivel"
+          subtitle="Selecciona el nivel de dificultad para comenzar tu aprendizaje"
+          size="medium"
+        />
+
+        <nav className="space-y-3" role="navigation" aria-label="Selección de nivel">
           {levels.map((level, index) => (
-            <NavigableButton
-              key={level.label}
+            <MenuButton
+              key={level.id}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
               onClick={() => navigate(level.route)}
+              icon={level.icon}
+              description={level.description}
+              status={getLevelStatus(level.id)}
+              variant={level.id === "back" ? "secondary" : "default"}
             >
               {level.label}
-            </NavigableButton>
+            </MenuButton>
           ))}
         </nav>
 
-        <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Controles de Teclado:</p>
-          <ul className="space-y-1">
-            <li>↑↓ Flechas o Tab - Navegar opciones</li>
-            <li>Enter - Seleccionar nivel</li>
-          </ul>
-        </div>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
+import { Volume2, Gauge, Power, Mic, ArrowLeft } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import HeroSection from "@/components/ui/HeroSection";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
+import Modal from "@/components/ui/Modal";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 interface Settings {
   volume: number;
   speed: number;
   enabled: boolean;
-  voice: string;
 }
 
 const Options = () => {
@@ -16,6 +18,7 @@ const Options = () => {
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const isInitialMount = useRef(true);
   
   const [settings, setSettings] = useState<Settings>(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
@@ -26,29 +29,51 @@ const Options = () => {
       volume: savedVolume ? parseInt(savedVolume) : 50,
       speed: savedSpeed ? parseFloat(savedSpeed) : 1.0,
       enabled: savedEnabled ? savedEnabled === 'true' : true,
-      voice: "Snelly (Aria)",
     };
   });
 
   useEffect(() => {
     setSpeed(settings.speed);
   }, [settings.speed]);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   const [showNarratorWarning, setShowNarratorWarning] = useState(false);
 
   const getSpeedLabel = (speed: number): string => {
-    if (speed === 2.0) return "el doble";
-    if (speed === 3.0) return "el triple";
-    return `${speed}x`;
+    if (speed <= 0.7) return "Lento";
+    if (speed <= 1.0) return "Normal";
+    if (speed <= 1.5) return "Rápido";
+    return "Muy rápido";
   };
 
   const settingsList = [
-    { key: "volume", label: "Volumen del Narrador", value: `${settings.volume}%`, type: "number" },
-    { key: "speed", label: "Velocidad del Narrador", value: getSpeedLabel(settings.speed), type: "number" },
-    { key: "enabled", label: "Activar Narrador", value: settings.enabled ? "ACTIVADO" : "DESACTIVADO", type: "toggle" },
-    { key: "voice", label: "Voz del Narrador", value: settings.voice, type: "text" },
-    { key: "exit", label: "Salir de Opciones", value: "", type: "action" },
+    { 
+      key: "volume", 
+      label: "Volumen", 
+      value: `${settings.volume}%`, 
+      icon: <Volume2 className="w-5 h-5" />,
+      description: "Volumen de la narración"
+    },
+    { 
+      key: "speed", 
+      label: "Velocidad", 
+      value: `${settings.speed.toFixed(1)}x (${getSpeedLabel(settings.speed)})`, 
+      icon: <Gauge className="w-5 h-5" />,
+      description: "Velocidad de la narración"
+    },
+    { 
+      key: "enabled", 
+      label: "Narrador", 
+      value: settings.enabled ? "Activado" : "Desactivado", 
+      icon: <Power className="w-5 h-5" />,
+      description: "Activar o desactivar la narración"
+    },
+    { 
+      key: "exit", 
+      label: "Guardar y Volver", 
+      value: "", 
+      icon: <ArrowLeft className="w-5 h-5" />,
+      description: "Volver al menú principal"
+    },
   ];
 
   const saveSettings = (newSettings: Settings) => {
@@ -56,22 +81,17 @@ const Options = () => {
     localStorage.setItem('narratorSpeed', newSettings.speed.toString());
     localStorage.setItem('narratorVolume', newSettings.volume.toString());
     localStorage.setItem('narratorEnabled', newSettings.enabled.toString());
-    setHasUnsavedChanges(false);
   };
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
     itemCount: settingsList.length,
     onSelect: (index) => {
       if (settingsList[index].key === "exit") {
-        if (hasUnsavedChanges) {
-          setShowConfirmation(true);
-        } else {
-          navigate("/");
-        }
+        navigate("/menu");
       }
     },
     onNext: () => {
-      if (showConfirmation || showNarratorWarning) return;
+      if (showNarratorWarning) return;
       
       const setting = settingsList[focusedIndex];
       const newSettings = { ...settings };
@@ -79,23 +99,19 @@ const Options = () => {
       if (setting.key === "volume") {
         newSettings.volume = Math.min(100, settings.volume + 10);
       } else if (setting.key === "speed") {
-        newSettings.speed = Math.min(4.0, Number((settings.speed + 0.1).toFixed(1)));
+        newSettings.speed = Math.min(2.0, Number((settings.speed + 0.1).toFixed(1)));
       } else if (setting.key === "enabled") {
-        // Si está activado y se va a desactivar, mostrar advertencia
         if (settings.enabled === true) {
           setShowNarratorWarning(true);
           return;
         }
-        newSettings.enabled = !settings.enabled;
+        newSettings.enabled = true;
       }
       
-      if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
-        saveSettings(newSettings);
-        setHasUnsavedChanges(true);
-      }
+      saveSettings(newSettings);
     },
     onPrev: () => {
-      if (showConfirmation || showNarratorWarning) return;
+      if (showNarratorWarning) return;
       
       const setting = settingsList[focusedIndex];
       const newSettings = { ...settings };
@@ -105,40 +121,35 @@ const Options = () => {
       } else if (setting.key === "speed") {
         newSettings.speed = Math.max(0.5, Number((settings.speed - 0.1).toFixed(1)));
       } else if (setting.key === "enabled") {
-        // Si está activado y se va a desactivar, mostrar advertencia
         if (settings.enabled === true) {
           setShowNarratorWarning(true);
           return;
         }
-        newSettings.enabled = !settings.enabled;
+        newSettings.enabled = true;
       }
       
-      if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
-        saveSettings(newSettings);
-        setHasUnsavedChanges(true);
-      }
+      saveSettings(newSettings);
     },
-    enabled: !showConfirmation && !showNarratorWarning,
+    enabled: !showNarratorWarning,
   });
 
   useEffect(() => {
     if (showNarratorWarning) {
-      setNarration("Advertencia. Si desactivas el narrador, no podrás escuchar instrucciones ni navegar con facilidad. Presiona ENTER para desactivar de todas formas. Presiona cualquier otra tecla para cancelar.");
-    } else if (showConfirmation) {
-      setNarration("Tienes cambios sin guardar. Presiona ENTER para salir y guardar. Presiona cualquier otra tecla para volver a opciones.");
+      setNarration("Advertencia. Si desactivas el narrador, no podrás escuchar instrucciones. Presiona Enter para desactivar o cualquier otra tecla para cancelar.");
     } else {
-      if (focusedIndex === 0 && narration === "") {
-        setNarration(`Menú de Opciones. Volumen del Narrador: el valor actual es ${settings.volume} por ciento.`);
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        setNarration(`Opciones de Accesibilidad. Volumen: ${settings.volume} por ciento.`);
+        return;
+      }
+      const setting = settingsList[focusedIndex];
+      if (setting.key === "exit") {
+        setNarration("Guardar y Volver al Menú Principal.");
       } else {
-        const setting = settingsList[focusedIndex];
-        if (setting.key === "exit") {
-          setNarration("Salir de Opciones. Vuelve al Menú Principal.");
-        } else {
-          setNarration(`${setting.label}. El valor actual es ${setting.value}.`);
-        }
+        setNarration(`${setting.label}. Valor actual: ${setting.value}. Usa flechas izquierda y derecha para ajustar.`);
       }
     }
-  }, [focusedIndex, showConfirmation, showNarratorWarning, settings]);
+  }, [focusedIndex, showNarratorWarning, settings]);
 
   useEffect(() => {
     if (!showNarratorWarning) return;
@@ -148,13 +159,10 @@ const Options = () => {
       e.stopPropagation();
       
       if (e.key === "Enter") {
-        // Confirmar desactivación
         const newSettings = { ...settings, enabled: false };
         saveSettings(newSettings);
-        setHasUnsavedChanges(true);
         setShowNarratorWarning(false);
       } else {
-        // Cancelar
         setShowNarratorWarning(false);
       }
     };
@@ -163,110 +171,125 @@ const Options = () => {
     return () => window.removeEventListener("keydown", handleNarratorWarning);
   }, [showNarratorWarning, settings]);
 
-  useEffect(() => {
-    if (!showConfirmation) return;
-
-    const handleConfirmation = (e: KeyboardEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      if (e.key === "Enter") {
-        setShowConfirmation(false);
-        navigate("/");
-      } else {
-        setShowConfirmation(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleConfirmation);
-    return () => window.removeEventListener("keydown", handleConfirmation);
-  }, [showConfirmation, navigate]);
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["←", "→"], action: "Ajustar valores" },
+    { keys: ["Enter"], action: "Confirmar" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      {showNarratorWarning && (
-        <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card border-4 border-destructive rounded-2xl p-12 max-w-2xl shadow-2xl">
-            <h2 className="text-4xl font-bold mb-6 text-center text-destructive">⚠️ Advertencia</h2>
-            <p className="text-xl text-center mb-6 text-foreground">
-              Si desactivas el narrador, no podrás escuchar las instrucciones ni navegar con facilidad por la aplicación.
+    <PageLayout
+      narration={narration}
+      speed={speed}
+      onSpeakingChange={setIsSpeaking}
+      isSpeaking={isSpeaking}
+    >
+      {/* Warning Modal */}
+      <Modal
+        open={showNarratorWarning}
+        title="⚠️ Desactivar Narrador"
+        description="Esta acción puede dificultar el uso de la aplicación."
+        variant="warning"
+        showCloseButton={false}
+      >
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Sin el narrador, no podrás escuchar las instrucciones ni la ayuda por voz.
+          </p>
+          <div className="flex flex-col gap-2 text-sm">
+            <p className="font-semibold text-destructive">
+              Presiona <kbd>Enter</kbd> para desactivar
             </p>
-            <p className="text-lg text-center mb-8 text-muted-foreground">
-              Esta aplicación está diseñada para funcionar con el narrador activo.
+            <p className="text-muted-foreground">
+              Presiona cualquier otra tecla para cancelar
             </p>
-            <div className="space-y-3 text-center text-lg">
-              <p className="font-bold text-destructive">Presiona ENTER para desactivar de todas formas</p>
-              <p className="text-muted-foreground">Presiona cualquier otra tecla para cancelar</p>
-            </div>
           </div>
         </div>
-      )}
-      
-      {showConfirmation && (
-        <div className="fixed inset-0 bg-foreground/50 backdrop-blur-sm flex items-center justify-center z-40">
-          <div className="bg-card border-4 border-primary rounded-2xl p-12 max-w-2xl shadow-2xl">
-            <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">¿Salir de Opciones?</h2>
-            <p className="text-xl text-center mb-8 text-muted-foreground">
-              Tienes cambios sin guardar.
-            </p>
-            <div className="space-y-3 text-center text-lg">
-              <p className="font-bold text-primary">Presiona ENTER para salir y guardar</p>
-              <p className="text-muted-foreground">Presiona cualquier otra tecla para volver</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-8 rounded-2xl mb-8 shadow-2xl">
-          <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Opciones de Accesibilidad
-          </h1>
-        </div>
+      </Modal>
 
-        <div className="space-y-4" role="list" aria-label="Settings">
+      <div className="pt-8 sm:pt-16">
+        <HeroSection
+          title="Opciones"
+          subtitle="Personaliza tu experiencia de aprendizaje"
+          size="small"
+        />
+
+        {/* Settings list */}
+        <section className="space-y-3" role="list" aria-label="Configuraciones">
           {settingsList.map((setting, index) => (
             <button
               key={setting.key}
               ref={setItemRef(index)}
-              className={`w-full p-6 text-left border-4 border-border rounded transition-all bg-card
-                focus:outline-none focus:ring-4 focus:ring-focus-ring focus:border-focus
-                ${focusedIndex === index ? "ring-4 ring-focus-ring border-focus bg-secondary" : ""}
-                ${setting.key === "exit" ? "bg-muted" : ""}`}
+              className={`btn-interactive group ${focusedIndex === index ? 'focused' : ''} ${setting.key === 'exit' ? 'border-accent/30 bg-accent/5' : ''}`}
               onClick={() => {
                 if (setting.key === "exit") {
-                  navigate("/");
+                  navigate("/menu");
                 }
               }}
+              aria-label={setting.key === "exit" ? setting.label : `${setting.label}: ${setting.value}`}
             >
-              <div className="flex justify-between items-center">
-                <span className="text-xl font-medium">{setting.label}</span>
+              <div className="flex items-center gap-4">
+                {/* Icon */}
+                <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl transition-colors ${
+                  setting.key === 'enabled' 
+                    ? settings.enabled 
+                      ? 'bg-success/10 text-success' 
+                      : 'bg-muted text-muted-foreground'
+                    : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground'
+                }`}>
+                  {setting.icon}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <span className="block text-lg font-semibold text-foreground">
+                    {setting.label}
+                  </span>
+                  {setting.description && (
+                    <span className="block text-sm text-muted-foreground">
+                      {setting.description}
+                    </span>
+                  )}
+                </div>
+
+                {/* Value */}
                 {setting.value && (
-                  <span className="text-2xl font-bold">{setting.value}</span>
+                  <div className="flex-shrink-0">
+                    <span className={`text-lg font-bold ${
+                      setting.key === 'enabled'
+                        ? settings.enabled ? 'text-success' : 'text-muted-foreground'
+                        : 'text-primary'
+                    }`}>
+                      {setting.value}
+                    </span>
+                  </div>
                 )}
               </div>
-              {setting.type !== "action" && focusedIndex === index && (
-                <div className="mt-2 text-sm text-muted-foreground">
-                  ← → Usa flechas Izquierda/Derecha para ajustar
+
+              {/* Adjustment hint for adjustable settings */}
+              {setting.key !== "exit" && focusedIndex === index && (
+                <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <kbd>←</kbd>
+                  <span>Disminuir</span>
+                  <span className="mx-2">|</span>
+                  <kbd>→</kbd>
+                  <span>Aumentar</span>
                 </div>
               )}
+
+              {/* Focus indicator */}
+              <div
+                className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-primary transition-all duration-200 ${
+                  focusedIndex === index ? "opacity-100" : "opacity-0"
+                }`}
+              />
             </button>
           ))}
-        </div>
+        </section>
 
-        <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Controles de Teclado:</p>
-          <ul className="space-y-1">
-            <li>↑↓ Flechas o Tab - Navegar configuraciones</li>
-            <li>← → Flechas Izquierda/Derecha - Ajustar valores</li>
-            <li>Enter - Confirmar y salir</li>
-          </ul>
-        </div>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

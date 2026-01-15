@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
-import NavigableButton from "@/components/NavigableButton";
+import { BookOpen, Dumbbell, Settings } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import HeroSection from "@/components/ui/HeroSection";
+import MenuButton from "@/components/ui/MenuButton";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 const MainMenu = () => {
@@ -10,6 +12,7 @@ const MainMenu = () => {
   const [narration, setNarration] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
@@ -17,78 +20,82 @@ const MainMenu = () => {
   }, []);
 
   const menuOptions = [
-    { label: "Aprender", route: "/learn", narration: "Botón Aprender." },
-    { label: "Ejercicios", route: "/exercises", narration: "Botón Ejercicios." },
-    { label: "Opciones", route: "/options", narration: "Botón Opciones." },
-    { label: "Salir de la Aplicación", route: "/exit", narration: "Botón Salir de la Aplicación." },
+    { 
+      label: "Aprender", 
+      description: "Lecciones paso a paso sobre ecuaciones",
+      route: "/learn", 
+      narration: "Botón Aprender. Accede a las lecciones de ecuaciones.",
+      icon: <BookOpen className="w-6 h-6" />
+    },
+    { 
+      label: "Ejercicios", 
+      description: "Practica resolviendo problemas",
+      route: "/exercises", 
+      narration: "Botón Ejercicios. Practica resolviendo ecuaciones.",
+      icon: <Dumbbell className="w-6 h-6" />
+    },
+    { 
+      label: "Opciones", 
+      description: "Ajusta la velocidad y accesibilidad",
+      route: "/options", 
+      narration: "Botón Opciones. Configura la accesibilidad.",
+      icon: <Settings className="w-6 h-6" />
+    },
   ];
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
     itemCount: menuOptions.length,
     onSelect: (index) => {
-      if (index === 3) {
-        if (window.confirm("¿Está seguro de que desea salir?")) {
-          window.close();
-        }
-      } else {
-        navigate(menuOptions[index].route);
-      }
+      navigate(menuOptions[index].route);
     },
   });
 
   useEffect(() => {
-    if (focusedIndex === 0 && narration === "") {
-      setNarration("SnailMath. Botón Aprender.");
-    } else {
-      setNarration(menuOptions[focusedIndex].narration);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      setNarration("Menú Principal de SnailMath. " + menuOptions[0].narration);
+      return;
     }
+    setNarration(menuOptions[focusedIndex].narration);
   }, [focusedIndex]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      <div className="max-w-2xl mx-auto pt-24">
-        <div className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-12 rounded-2xl mb-12 shadow-2xl">
-          <h1 className="text-7xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            SnailMath
-          </h1>
-          <p className="text-center text-xl text-muted-foreground font-medium">
-            Aprende ecuaciones de forma accesible
-          </p>
-        </div>
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Enter"], action: "Seleccionar" },
+  ];
 
-        <nav className="space-y-4" role="navigation" aria-label="Main menu">
+  return (
+    <PageLayout
+      narration={narration}
+      speed={speed}
+      onSpeakingChange={setIsSpeaking}
+      isSpeaking={isSpeaking}
+    >
+      <div className="pt-8 sm:pt-16">
+        <HeroSection
+          title="SnailMath"
+          subtitle="Aprende ecuaciones matemáticas de forma interactiva y accesible"
+          size="large"
+        />
+
+        <nav className="space-y-3" role="navigation" aria-label="Menú principal">
           {menuOptions.map((option, index) => (
-            <NavigableButton
+            <MenuButton
               key={option.label}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
-              onClick={() => {
-                if (index === 3) {
-                  if (window.confirm("¿Está seguro de que desea salir?")) {
-                    window.close();
-                  }
-                } else {
-                  navigate(option.route);
-                }
-              }}
+              onClick={() => navigate(option.route)}
+              icon={option.icon}
+              description={option.description}
             >
               {option.label}
-            </NavigableButton>
+            </MenuButton>
           ))}
         </nav>
 
-        <div className="mt-8 p-4 border-2 border-border bg-muted rounded text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Controles de Teclado:</p>
-          <ul className="space-y-1">
-            <li>↑↓ Flechas o Tab - Navegar opciones</li>
-            <li>Enter - Seleccionar opción</li>
-          </ul>
-        </div>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
