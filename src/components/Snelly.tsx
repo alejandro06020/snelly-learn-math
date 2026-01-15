@@ -10,7 +10,7 @@ const Snelly = ({ isSpeaking = false }: SnellyProps) => {
       <img 
         src={snellyImage}
         alt="Snelly el caracol narrador"
-        className={`w-full h-full object-contain transition-transform duration-300 ${isSpeaking ? 'scale-110' : 'scale-100'}`}
+        className={`w-full h-full object-contain transition-transform duration-500 ${isSpeaking ? 'scale-1500' : 'scale-1000'}`}
       />
     </div>
   );
