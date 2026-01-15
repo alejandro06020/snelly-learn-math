@@ -83,9 +83,13 @@ const LearnContent = () => {
   
   const storageKey = `snailmath_progress_level_${level || "1"}`;
 
+  const pages = levelContent[level || "1"] || levelContent["1"];
+  
   const [currentPage, setCurrentPage] = useState(() => {
     const savedPage = localStorage.getItem(storageKey);
-    return savedPage ? parseInt(savedPage, 10) : 0;
+    const parsed = savedPage ? parseInt(savedPage, 10) : 0;
+    // Ensure currentPage is within bounds
+    return Math.min(Math.max(0, parsed), pages.length - 1);
   });
 
   const [narration, setNarration] = useState("");
@@ -105,7 +109,7 @@ const LearnContent = () => {
     }
   }, [currentPage, showEndOptions, storageKey]);
 
-  const pages = levelContent[level || "1"] || levelContent["1"];
+  // pages is now defined earlier, before useState
   
   const endOptions = useMemo(() => [
     { 
@@ -156,7 +160,8 @@ const LearnContent = () => {
         setShowIndex(false);
         // Volver a narrar la página actual después de cerrar
         setTimeout(() => {
-          setNarration(pages[currentPage].narration);
+          const safeIndex = Math.min(currentPage, pages.length - 1);
+          setNarration(pages[safeIndex]?.narration || "");
         }, 100);
       }
     }
@@ -209,7 +214,8 @@ const LearnContent = () => {
       setTimeout(() => setNarration(endOptions[focusedIndex]?.narration || ""), 100);
     } else {
       setNarration("");
-      setTimeout(() => setNarration(pages[currentPage].narration), 100);
+      const safeIndex = Math.min(currentPage, pages.length - 1);
+      setTimeout(() => setNarration(pages[safeIndex]?.narration || ""), 100);
     }
   }, [showIndex, showEndOptions, focusedIndex, indexOptions, endOptions, pages, currentPage]);
 
@@ -223,7 +229,8 @@ const LearnContent = () => {
         e.preventDefault();
         if (showIndex) {
           setShowIndex(false);
-          setTimeout(() => setNarration(pages[currentPage].narration), 100);
+          const safeIndex = Math.min(currentPage, pages.length - 1);
+          setTimeout(() => setNarration(pages[safeIndex]?.narration || ""), 100);
         } else {
           setShowIndex(true);
           setFocusedIndex(0);
@@ -250,7 +257,8 @@ const LearnContent = () => {
         setNarration(endOptions[focusedIndex].narration);
       }
     } else {
-      setNarration(pages[currentPage].narration);
+      const safeIndex = Math.min(currentPage, pages.length - 1);
+      setNarration(pages[safeIndex]?.narration || "");
     }
   }, [currentPage, showEndOptions, showIndex, focusedIndex, pages, indexOptions, endOptions]);
 
@@ -265,7 +273,8 @@ const LearnContent = () => {
           onClick={() => {
             if (showIndex) {
               setShowIndex(false);
-              setTimeout(() => setNarration(pages[currentPage].narration), 100);
+              const safeIndex = Math.min(currentPage, pages.length - 1);
+              setTimeout(() => setNarration(pages[safeIndex]?.narration || ""), 100);
             } else {
               setShowIndex(true);
               setFocusedIndex(0);
@@ -324,10 +333,10 @@ const LearnContent = () => {
                   <span className="text-primary">Presiona ESC para el menú</span>
                 </div>
                 <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {pages[currentPage].title}
+                  {pages[currentPage]?.title || "Cargando..."}
                 </h2>
                 <div className="text-xl leading-relaxed flex-1">
-                  {pages[currentPage].content}
+                  {pages[currentPage]?.content || ""}
                 </div>
                 <div className="flex justify-between items-center mt-8 pt-4 border-t-2 border-border">
                   <div className="text-muted-foreground text-sm">
