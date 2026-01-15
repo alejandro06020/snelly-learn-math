@@ -28,60 +28,66 @@ export const useSpeech = () => {
     };
   }, []);
 
-  const speak = useCallback(async (text: string, options: SpeechOptions = {}) => {
-    // Cancel any ongoing speech
-    if (utteranceRef.current) {
-      window.speechSynthesis.cancel();
-      utteranceRef.current = null;
-    }
+  const speak = useCallback((text: string, options: SpeechOptions = {}) => {
+    // ALWAYS cancel any ongoing speech immediately
+    window.speechSynthesis.cancel();
+    utteranceRef.current = null;
+    setIsSpeaking(false);
+    setIsLoading(false);
 
     if (!text.trim()) return;
 
     setIsLoading(true);
 
-    try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utteranceRef.current = utterance;
+    // Small delay to ensure cancellation is processed
+    setTimeout(() => {
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
 
-      // Find Spanish voice
-      const spanishVoice = voices.find(voice => 
-        voice.lang.startsWith('es') || voice.lang.includes('ES')
-      );
-      
-      if (spanishVoice) {
-        utterance.voice = spanishVoice;
+        // Find Spanish voice
+        const spanishVoice = voices.find(voice => 
+          voice.lang.startsWith('es') || voice.lang.includes('ES')
+        );
+        
+        if (spanishVoice) {
+          utterance.voice = spanishVoice;
+        }
+
+        utterance.lang = 'es-ES';
+        utterance.rate = options.speed || 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        utterance.onstart = () => {
+          setIsLoading(false);
+          setIsSpeaking(true);
+          options.onStart?.();
+        };
+
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          utteranceRef.current = null;
+          options.onEnd?.();
+        };
+
+        utterance.onerror = (event) => {
+          // Ignore 'interrupted' errors as they're expected when cancelling
+          if (event.error !== 'interrupted') {
+            console.error('Speech error:', event);
+          }
+          setIsSpeaking(false);
+          setIsLoading(false);
+          utteranceRef.current = null;
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } catch (error: any) {
+        console.error('Speech error:', error);
+        setIsSpeaking(false);
+        setIsLoading(false);
       }
-
-      utterance.lang = 'es-ES';
-      utterance.rate = options.speed || 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      utterance.onstart = () => {
-        setIsLoading(false);
-        setIsSpeaking(true);
-        options.onStart?.();
-      };
-
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        utteranceRef.current = null;
-        options.onEnd?.();
-      };
-
-      utterance.onerror = (event) => {
-        console.error('Speech error:', event);
-        setIsSpeaking(false);
-        setIsLoading(false);
-        utteranceRef.current = null;
-      };
-
-      window.speechSynthesis.speak(utterance);
-    } catch (error: any) {
-      console.error('Speech error:', error);
-      setIsSpeaking(false);
-      setIsLoading(false);
-    }
+    }, 50);
   }, [voices]);
 
   const stop = useCallback(() => {
