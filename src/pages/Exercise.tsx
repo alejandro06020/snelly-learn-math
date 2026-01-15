@@ -2,13 +2,14 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 import PageLayout from "@/components/ui/PageLayout";
-import HeroSection from "@/components/ui/HeroSection";
 import MenuButton from "@/components/ui/MenuButton";
-import KeyboardHelper from "@/components/ui/KeyboardHelper";
+// Importamos la función auxiliar
+import KeyboardHelper, { getKeyboardInstructions } from "@/components/ui/KeyboardHelper"; 
 import StatCard from "@/components/ui/StatCard";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 import { equationToVerbal } from "@/lib/utils";
 
+// ... (Resto de interfaces y constantes exerciseSteps se mantienen igual) ...
 interface ExerciseStep {
   equation: string;
   actions: {
@@ -42,6 +43,7 @@ const exerciseSteps: ExerciseStep[] = [
 const Exercise = () => {
   const navigate = useNavigate();
   const [narration, setNarration] = useState("");
+  // ... (otros estados) ...
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState(0);
   const [wrongActions, setWrongActions] = useState<string[]>([]);
@@ -51,6 +53,12 @@ const Exercise = () => {
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const isInitialMount = useRef(true);
 
+  // Definimos los controles de teclado
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Enter"], action: "Seleccionar respuesta" },
+  ];
+
   useEffect(() => {
     const savedSpeed = localStorage.getItem('narratorSpeed');
     if (savedSpeed) setSpeed(parseFloat(savedSpeed));
@@ -59,6 +67,7 @@ const Exercise = () => {
   const step = exerciseSteps[currentStep];
   const isLastStep = currentStep === exerciseSteps.length - 1;
 
+  // ... (handleAction y useKeyboardNav se mantienen igual) ...
   const handleAction = (index: number) => {
     const action = step.actions[index];
     
@@ -90,29 +99,30 @@ const Exercise = () => {
     enabled: !completed,
   });
 
+  // Efecto modificado para leer instrucciones primero
   useEffect(() => {
     if (!completed) {
       if (isInitialMount.current) {
         isInitialMount.current = false;
-        setNarration(`Ejercicio. Resuelve la ecuación ${equationToVerbal(step.equation)}. Primera opción: ${step.actions[0].label}`);
+        
+        // Generamos las instrucciones legibles
+        const controlsNarration = getKeyboardInstructions(keyboardControls);
+        
+        // Las concatenamos al inicio de la narración del ejercicio
+        setNarration(`${controlsNarration}. Ejercicio. Resuelve la ecuación ${equationToVerbal(step.equation)}. Primera opción: ${step.actions[0].label}`);
         return;
       }
       if (!feedback) {
         setNarration(step.actions[focusedIndex].label);
       }
     }
-  }, [focusedIndex, currentStep, completed, feedback]);
+  }, [focusedIndex, currentStep, completed, feedback]); 
 
   useEffect(() => {
     if (completed) {
       navigate("/exercise-complete", { state: { errors, wrongActions } });
     }
   }, [completed, navigate, errors, wrongActions]);
-
-  const keyboardControls = [
-    { keys: ["↑", "↓"], action: "Navegar opciones" },
-    { keys: ["Enter"], action: "Seleccionar respuesta" },
-  ];
 
   // Visual feedback overlay
   const feedbackStyles = {
@@ -128,7 +138,7 @@ const Exercise = () => {
       isSpeaking={isSpeaking}
     >
       <div className="pt-8 sm:pt-12">
-        {/* Progress and Stats Bar */}
+        {/* ... (Resto del JSX se mantiene igual) ... */}
         <div className="flex items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">
