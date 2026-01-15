@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
-import NavigableButton from "@/components/NavigableButton";
+import { BookOpen, Dumbbell, Settings } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import HeroSection from "@/components/ui/HeroSection";
+import MenuButton from "@/components/ui/MenuButton";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 const MainMenu = () => {
@@ -18,9 +20,27 @@ const MainMenu = () => {
   }, []);
 
   const menuOptions = [
-    { label: "Aprender", route: "/learn", narration: "Botón Aprender. Accede a las lecciones de ecuaciones." },
-    { label: "Ejercicios", route: "/exercises", narration: "Botón Ejercicios. Practica resolviendo ecuaciones." },
-    { label: "Opciones", route: "/options", narration: "Botón Opciones. Configura la accesibilidad." },
+    { 
+      label: "Aprender", 
+      description: "Lecciones paso a paso sobre ecuaciones",
+      route: "/learn", 
+      narration: "Botón Aprender. Accede a las lecciones de ecuaciones.",
+      icon: <BookOpen className="w-6 h-6" />
+    },
+    { 
+      label: "Ejercicios", 
+      description: "Practica resolviendo problemas",
+      route: "/exercises", 
+      narration: "Botón Ejercicios. Practica resolviendo ecuaciones.",
+      icon: <Dumbbell className="w-6 h-6" />
+    },
+    { 
+      label: "Opciones", 
+      description: "Ajusta la velocidad y accesibilidad",
+      route: "/options", 
+      narration: "Botón Opciones. Configura la accesibilidad.",
+      icon: <Settings className="w-6 h-6" />
+    },
   ];
 
   const { focusedIndex, setItemRef } = useKeyboardNav({
@@ -33,49 +53,49 @@ const MainMenu = () => {
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      setNarration("Menú Principal de SnailMath. Botón Aprender. Accede a las lecciones de ecuaciones.");
+      setNarration("Menú Principal de SnailMath. " + menuOptions[0].narration);
       return;
     }
     setNarration(menuOptions[focusedIndex].narration);
   }, [focusedIndex]);
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      <div className="max-w-2xl mx-auto pt-24">
-        <header className="border-4 border-primary bg-gradient-to-br from-card to-accent/20 p-12 rounded-2xl mb-12 shadow-2xl">
-          <h1 className="text-7xl font-bold text-center mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            SnailMath
-          </h1>
-          <p className="text-center text-xl text-muted-foreground font-medium">
-            Aprende ecuaciones de forma accesible
-          </p>
-        </header>
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Enter"], action: "Seleccionar" },
+  ];
 
-        <nav className="space-y-4" role="navigation" aria-label="Menú principal">
+  return (
+    <PageLayout
+      narration={narration}
+      speed={speed}
+      onSpeakingChange={setIsSpeaking}
+      isSpeaking={isSpeaking}
+    >
+      <div className="pt-8 sm:pt-16">
+        <HeroSection
+          title="SnailMath"
+          subtitle="Aprende ecuaciones matemáticas de forma interactiva y accesible"
+          size="large"
+        />
+
+        <nav className="space-y-3" role="navigation" aria-label="Menú principal">
           {menuOptions.map((option, index) => (
-            <NavigableButton
+            <MenuButton
               key={option.label}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
               onClick={() => navigate(option.route)}
+              icon={option.icon}
+              description={option.description}
             >
               {option.label}
-            </NavigableButton>
+            </MenuButton>
           ))}
         </nav>
 
-        <aside className="mt-8 p-4 border-2 border-border bg-muted rounded-lg text-sm text-muted-foreground" aria-label="Guía de controles">
-          <h2 className="font-semibold mb-3 text-foreground">Controles de Teclado:</h2>
-          <ul className="space-y-2">
-            <li><kbd className="px-2 py-1 bg-background rounded border">↑↓</kbd> o <kbd className="px-2 py-1 bg-background rounded border">Tab</kbd> Navegar opciones</li>
-            <li><kbd className="px-2 py-1 bg-background rounded border">Enter</kbd> Seleccionar opción</li>
-          </ul>
-        </aside>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </main>
+    </PageLayout>
   );
 };
 
