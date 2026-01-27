@@ -132,17 +132,17 @@ const LearnContent = () => {
           <>
             <ProgressIndicator current={currentPage} total={pages.length} />
             <article className="hero-card mb-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gradient mb-4">{pages[currentPage]?.title || "Cargando..."}</h1>
-              <p className="text-lg text-foreground leading-relaxed">{pages[currentPage]?.content || ""}</p>
+              <h1 tabIndex={0} className="text-2xl sm:text-3xl font-bold text-gradient mb-4">{pages[currentPage]?.title || "Cargando..."}</h1>
+              <p tabIndex={0} className="text-lg text-foreground leading-relaxed">{pages[currentPage]?.content || ""}</p>
             </article>
             <KeyboardHelper controls={keyboardControls} compact />
           </>
         ) : (
           <>
             <div className="hero-card text-center mb-8 border-success/30">
-              <span className="text-4xl mb-4 block">🎉</span>
-              <h1 className="text-3xl font-bold text-success mb-2">¡Lección Completada!</h1>
-              <p className="text-muted-foreground">Excelente trabajo. ¿Qué te gustaría hacer ahora?</p>
+              <span className="text-4xl mb-4 block" role="img" aria-label="Celebración">🎉</span>
+              <h1 tabIndex={0} className="text-3xl font-bold text-success mb-2">¡Lección Completada!</h1>
+              <p tabIndex={0} className="text-muted-foreground">Excelente trabajo. ¿Qué te gustaría hacer ahora?</p>
             </div>
             <nav className="space-y-3">
               {endOptions.map((option, index) => (

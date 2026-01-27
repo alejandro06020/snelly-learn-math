@@ -108,15 +108,15 @@ const Welcome = () => {
 
         {/* Content card */}
         <div className="hero-card text-center mb-8">
-          <div className="flex justify-center mb-6 text-primary">
+          <div className="flex justify-center mb-6 text-primary" aria-hidden="true">
             {sections[currentSection].icon}
           </div>
           
-          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
+          <h1 tabIndex={0} className="text-3xl sm:text-4xl font-bold text-gradient mb-4">
             {sections[currentSection].title}
           </h1>
           
-          <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+          <p tabIndex={0} className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
             {sections[currentSection].content}
           </p>
         </div>
@@ -139,7 +139,7 @@ const Welcome = () => {
 
         {/* Quick tip */}
         <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/20 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p tabIndex={0} className="text-sm text-muted-foreground">
             <span className="font-medium text-primary">Tip:</span> Presiona <kbd>Espacio</kbd> para repetir cualquier instrucción
           </p>
         </div>

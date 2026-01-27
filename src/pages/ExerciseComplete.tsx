@@ -67,34 +67,34 @@ const ExerciseComplete = () => {
       
       <div className="max-w-2xl mx-auto pt-24">
         <header className="border-4 border-green-500 bg-gradient-to-br from-card to-green-500/10 p-12 rounded-2xl mb-8 text-center shadow-2xl">
-          <div className="text-8xl mb-6" aria-hidden="true">✓</div>
-          <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-green-500 to-accent bg-clip-text text-transparent">
+          <div className="text-8xl mb-6" role="img" aria-label="Marca de verificación">✓</div>
+          <h1 tabIndex={0} className="text-6xl font-bold mb-6 bg-gradient-to-r from-green-500 to-accent bg-clip-text text-transparent">
             ¡Ecuación Resuelta!
           </h1>
           <div className="border-4 border-primary rounded-xl p-8 bg-gradient-to-br from-primary/5 to-accent/5">
-            <div className="text-5xl font-bold mb-2 text-primary">x = 5</div>
-            <div className="text-xl text-muted-foreground font-medium">Resultado Final</div>
+            <div tabIndex={0} className="text-5xl font-bold mb-2 text-primary" aria-label="Resultado: x igual a 5">x = 5</div>
+            <div tabIndex={0} className="text-xl text-muted-foreground font-medium">Resultado Final</div>
           </div>
         </header>
 
         <section className="border-4 border-border bg-card p-8 rounded-lg mb-8" aria-label="Resumen de errores">
           <div className="flex justify-between items-center">
-            <span className="text-2xl font-medium">Errores Cometidos:</span>
-            <span className={`text-5xl font-bold ${errors === 0 ? 'text-green-500' : 'text-destructive'}`}>
+            <span tabIndex={0} className="text-2xl font-medium">Errores Cometidos:</span>
+            <span tabIndex={0} className={`text-5xl font-bold ${errors === 0 ? 'text-green-500' : 'text-destructive'}`} aria-label={`${errors} errores`}>
               {errors}
             </span>
           </div>
           {errors === 0 && (
-            <p className="text-center mt-4 text-lg text-green-500 font-medium">
+            <p tabIndex={0} className="text-center mt-4 text-lg text-green-500 font-medium">
               ¡Perfecto! ¡Sin errores!
             </p>
           )}
           {wrongActions.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
-              <h2 className="text-lg font-medium mb-2">Acciones incorrectas:</h2>
+              <h2 tabIndex={0} className="text-lg font-medium mb-2">Acciones incorrectas:</h2>
               <ul className="list-disc list-inside text-muted-foreground">
                 {wrongActions.map((action, index) => (
-                  <li key={index}>{action}</li>
+                  <li tabIndex={0} key={index}>{action}</li>
                 ))}
               </ul>
             </div>

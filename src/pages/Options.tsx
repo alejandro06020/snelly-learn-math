@@ -193,14 +193,14 @@ const Options = () => {
         showCloseButton={false}
       >
         <div className="space-y-4">
-          <p className="text-muted-foreground">
+          <p tabIndex={0} className="text-muted-foreground">
             Sin el narrador, no podrás escuchar las instrucciones ni la ayuda por voz.
           </p>
           <div className="flex flex-col gap-2 text-sm">
-            <p className="font-semibold text-destructive">
+            <p tabIndex={0} className="font-semibold text-destructive">
               Presiona <kbd>Enter</kbd> para desactivar
             </p>
-            <p className="text-muted-foreground">
+            <p tabIndex={0} className="text-muted-foreground">
               Presiona cualquier otra tecla para cancelar
             </p>
           </div>

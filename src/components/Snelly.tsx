@@ -43,8 +43,7 @@ const Snelly = ({ isSpeaking = false, size = "medium", className = "" }: SnellyP
       >
         <img 
           src={snellyImage}
-          alt=""
-          aria-hidden="true"
+          alt="Snelly, el caracol guía de SnailMath"
           className={`w-[85%] h-[85%] object-contain transition-transform duration-300 ${
             isSpeaking ? 'scale-105' : 'scale-100'
           }`}
