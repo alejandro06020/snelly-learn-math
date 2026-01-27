@@ -141,7 +141,7 @@ const Exercise = () => {
         {/* ... (Resto del JSX se mantiene igual) ... */}
         <div className="flex items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">
+            <span tabIndex={0} className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium" aria-label={`Paso ${currentStep + 1} de ${exerciseSteps.length}`}>
               Paso {currentStep + 1} de {exerciseSteps.length}
             </span>
           </div>
@@ -155,13 +155,13 @@ const Exercise = () => {
 
         {/* Equation Display */}
         <div className={`hero-card text-center mb-8 transition-all duration-300 ${feedback ? feedbackStyles[feedback] : ''}`}>
-          <p className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+          <p tabIndex={0} className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Resuelve la ecuación
           </p>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display">
+          <h1 tabIndex={0} className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display" aria-label={`Ecuación: ${step.equation}`}>
             {step.equation}
           </h1>
-          <p className="text-lg text-muted-foreground mt-4">
+          <p tabIndex={0} className="text-lg text-muted-foreground mt-4">
             Elige el siguiente paso correcto
           </p>
         </div>

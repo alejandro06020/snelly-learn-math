@@ -34,17 +34,26 @@ const HeroSection = ({
   return (
     <header className={`hero-card text-center mb-8 ${sizeClasses[size]}`}>
       {badge && (
-        <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold text-primary bg-primary/10 rounded-full">
+        <span 
+          tabIndex={0}
+          className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold text-primary bg-primary/10 rounded-full"
+        >
           {badge}
         </span>
       )}
       
-      <h1 className={`${titleSizes[size]} text-gradient mb-4`}>
+      <h1 
+        tabIndex={0}
+        className={`${titleSizes[size]} text-gradient mb-4`}
+      >
         {title}
       </h1>
       
       {subtitle && (
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto">
+        <p 
+          tabIndex={0}
+          className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto"
+        >
           {subtitle}
         </p>
       )}
