@@ -108,8 +108,8 @@ const KeyboardHelper = ({ controls, compact = false }: KeyboardHelperProps) => {
   return (
     <aside className="controls-helper mt-8 rounded-lg border bg-card p-4 shadow-sm" aria-label="Guía de controles de teclado">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <Keyboard className="w-4 h-4 text-primary" />
+        <h2 tabIndex={0} className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Keyboard className="w-4 h-4 text-primary" aria-hidden="true" />
           Controles de Teclado
         </h2>
         <Button
@@ -135,7 +135,7 @@ const KeyboardHelper = ({ controls, compact = false }: KeyboardHelperProps) => {
       <ul className="space-y-2">
         {controls.map((control, index) => (
           <li key={index} className="flex items-center justify-between text-sm group hover:bg-muted/50 p-1.5 rounded transition-colors">
-            <span className="text-muted-foreground">{control.action}</span>
+            <span tabIndex={0} className="text-muted-foreground">{control.action}</span>
             <span className="flex items-center gap-1">
               {control.keys.map((key, keyIndex) => (
                 <span key={keyIndex} className="flex items-center">
