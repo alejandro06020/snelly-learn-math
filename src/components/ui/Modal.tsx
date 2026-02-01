@@ -75,6 +75,7 @@ const Modal = ({
           <div className="flex items-start justify-between gap-4">
             <h2
               id="modal-title"
+              tabIndex={0}
               className={`text-2xl font-bold ${titleStyles[variant]}`}
             >
               {title}
@@ -92,6 +93,7 @@ const Modal = ({
           {description && (
             <p
               id="modal-description"
+              tabIndex={0}
               className="text-muted-foreground mt-2"
             >
               {description}

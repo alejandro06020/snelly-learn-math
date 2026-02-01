@@ -42,8 +42,8 @@ const StatCard = ({
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <span className="block text-sm text-muted-foreground">{label}</span>
-        <span className={`block text-2xl font-bold ${valueStyles[variant]}`} aria-live="polite">
+        <span tabIndex={0} className="block text-sm text-muted-foreground">{label}</span>
+        <span tabIndex={0} className={`block text-2xl font-bold ${valueStyles[variant]}`} aria-live="polite">
           {value}
         </span>
       </div>

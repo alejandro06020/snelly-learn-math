@@ -21,10 +21,10 @@ const ProgressIndicator = ({
     <div className="mb-6" role="progressbar" aria-valuenow={current + 1} aria-valuemin={1} aria-valuemax={total}>
       {/* Text indicator */}
       <div className="flex items-center justify-between text-sm mb-2">
-        <span className="text-muted-foreground">
+        <span tabIndex={0} className="text-muted-foreground">
           Paso {current + 1} de {total}
         </span>
-        <span className="font-medium text-primary">
+        <span tabIndex={0} className="font-medium text-primary">
           {Math.round(percentage)}%
         </span>
       </div>
