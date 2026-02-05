@@ -14,9 +14,13 @@ const ExerciseComplete = () => {
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    if (titleRef.current) {
-      titleRef.current.focus();
-    }
+    // Delay para asegurar que el focus se aplique después del useKeyboardNav
+    const timer = setTimeout(() => {
+      if (titleRef.current) {
+        titleRef.current.focus();
+      }
+    }, 50);
+    return () => clearTimeout(timer);
   }, []);
 
   const options = [

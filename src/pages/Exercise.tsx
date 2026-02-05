@@ -48,6 +48,19 @@ const Exercise = () => {
   const [showMenu, setShowMenu] = useState(false);
   const titleRef = useRef<HTMLParagraphElement>(null);
 
+  // Función para hacer la ecuación accesible para lectores de pantalla
+  const getAccessibleEquation = (equation: string): string => {
+    return equation
+      .replace(/x/g, " equis ")
+      .replace(/-/g, " menos ")
+      .replace(/\+/g, " más ")
+      .replace(/=/g, " igual a ")
+      .replace(/\*/g, " por ")
+      .replace(/\//g, " dividido ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   const menuOptions = useMemo(() => [
     { 
       label: "Volver al ejercicio", 
@@ -198,7 +211,7 @@ const Exercise = () => {
           <p ref={titleRef} tabIndex={0} className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Resuelve la ecuación
           </p>
-          <h1 tabIndex={0} className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display" aria-label={`Ecuación: ${step.equation}`}>
+          <h1 tabIndex={0} className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display" aria-label={`Ecuación: ${getAccessibleEquation(step.equation)}`}>
             {step.equation}
           </h1>
           <p tabIndex={0} className="text-lg text-muted-foreground mt-4">
