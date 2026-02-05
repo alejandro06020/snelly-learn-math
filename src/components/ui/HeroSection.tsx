@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 
 interface HeroSectionProps {
   title: string;
@@ -6,6 +6,7 @@ interface HeroSectionProps {
   children?: ReactNode;
   size?: "small" | "medium" | "large";
   badge?: string;
+  autoFocus?: boolean;
 }
 
 /**
@@ -18,7 +19,16 @@ const HeroSection = ({
   children,
   size = "medium",
   badge,
+  autoFocus = false,
 }: HeroSectionProps) => {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (autoFocus && titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, [autoFocus]);
+
   const sizeClasses = {
     small: "p-6 sm:p-8",
     medium: "p-8 sm:p-10",
@@ -43,6 +53,7 @@ const HeroSection = ({
       )}
       
       <h1 
+        ref={titleRef}
         tabIndex={0}
         className={`${titleSizes[size]} text-gradient mb-4`}
       >

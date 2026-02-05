@@ -1,15 +1,13 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Focus, Menu, X, Home, RotateCcw, BookOpen } from "lucide-react";
 import PageLayout from "@/components/ui/PageLayout";
 import MenuButton from "@/components/ui/MenuButton";
-// Importamos la función auxiliar
-import KeyboardHelper, { getKeyboardInstructions } from "@/components/ui/KeyboardHelper"; 
+import KeyboardHelper from "@/components/ui/KeyboardHelper"; 
 import StatCard from "@/components/ui/StatCard";
+import Modal from "@/components/ui/Modal";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
-import { equationToVerbal } from "@/lib/utils";
 
-// ... (Resto de interfaces y constantes exerciseSteps se mantienen igual) ...
 interface ExerciseStep {
   equation: string;
   actions: {
@@ -42,32 +40,44 @@ const exerciseSteps: ExerciseStep[] = [
 
 const Exercise = () => {
   const navigate = useNavigate();
-  const [narration, setNarration] = useState("");
-  // ... (otros estados) ...
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState(0);
   const [wrongActions, setWrongActions] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speed, setSpeed] = useState(1.0);
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
-  const isInitialMount = useRef(true);
+  const [showMenu, setShowMenu] = useState(false);
+  const titleRef = useRef<HTMLParagraphElement>(null);
 
-  // Definimos los controles de teclado
-  const keyboardControls = [
-    { keys: ["↑", "↓"], action: "Navegar opciones" },
-    { keys: ["Enter"], action: "Seleccionar respuesta" },
-  ];
+  const menuOptions = useMemo(() => [
+    { 
+      label: "Volver al ejercicio", 
+      action: () => { setShowMenu(false); setTimeout(() => titleRef.current?.focus(), 100); },
+      icon: <Focus className="w-5 h-5" />
+    },
+    { 
+      label: "Reiniciar ejercicio", 
+      action: () => { setCurrentStep(0); setErrors(0); setWrongActions([]); setShowMenu(false); },
+      icon: <RotateCcw className="w-5 h-5" />
+    },
+    { 
+      label: "Ir a lecciones", 
+      action: () => navigate("/learn"),
+      icon: <BookOpen className="w-5 h-5" />
+    },
+    { 
+      label: "Menú principal", 
+      action: () => navigate("/menu"),
+      icon: <Home className="w-5 h-5" />
+    },
+  ], [navigate]);
 
-  useEffect(() => {
-    const savedSpeed = localStorage.getItem('narratorSpeed');
-    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
-  }, []);
+  const keyboardControls = showMenu
+    ? [{ keys: ["↑", "↓"], action: "Navegar" }, { keys: ["Tab"], action: "Siguiente elemento" }, { keys: ["Enter"], action: "Seleccionar" }, { keys: ["Esc"], action: "Cerrar" }]
+    : [{ keys: ["↑", "↓"], action: "Navegar opciones" }, { keys: ["Tab"], action: "Siguiente elemento" }, { keys: ["Enter"], action: "Seleccionar respuesta" }, { keys: ["Esc"], action: "Menú" }];
 
   const step = exerciseSteps[currentStep];
   const isLastStep = currentStep === exerciseSteps.length - 1;
 
-  // ... (handleAction y useKeyboardNav se mantienen igual) ...
   const handleAction = (index: number) => {
     const action = step.actions[index];
     
@@ -78,51 +88,56 @@ const Exercise = () => {
       if (isLastStep) {
         setCompleted(true);
       } else {
-        const nextStep = currentStep + 1;
-        setCurrentStep(nextStep);
-        setTimeout(() => {
-          setNarration(`¡Correcto! La nueva ecuación es ${equationToVerbal(exerciseSteps[nextStep].equation)}`);
-        }, 500);
+        setCurrentStep(currentStep + 1);
       }
     } else {
       setFeedback("incorrect");
       setTimeout(() => setFeedback(null), 1000);
       setErrors(errors + 1);
       setWrongActions([...wrongActions, action.label]);
-      setNarration(`Incorrecto. Intenta de nuevo. La ecuación es ${equationToVerbal(step.equation)}.`);
     }
   };
 
-  const { focusedIndex, setItemRef } = useKeyboardNav({
-    itemCount: step.actions.length,
-    onSelect: handleAction,
+  const { focusedIndex, setItemRef, getTabIndex, handleItemFocus, setFocusedIndex } = useKeyboardNav({
+    itemCount: showMenu ? menuOptions.length : step.actions.length,
+    onSelect: showMenu 
+      ? (index) => menuOptions[index].action()
+      : handleAction,
     enabled: !completed,
+    tabBehavior: "natural",
+    orientation: "vertical",
   });
 
-  // Efecto modificado para leer instrucciones primero
+  // Manejar tecla Escape para abrir/cerrar menú
   useEffect(() => {
-    if (!completed) {
-      if (isInitialMount.current) {
-        isInitialMount.current = false;
-        
-        // Generamos las instrucciones legibles
-        const controlsNarration = getKeyboardInstructions(keyboardControls);
-        
-        // Las concatenamos al inicio de la narración del ejercicio
-        setNarration(`${controlsNarration}. Ejercicio. Resuelve la ecuación ${equationToVerbal(step.equation)}. Primera opción: ${step.actions[0].label}`);
-        return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Escape") {
+        e.preventDefault();
+        if (showMenu) {
+          setShowMenu(false);
+          setTimeout(() => titleRef.current?.focus(), 100);
+        } else {
+          setShowMenu(true);
+          setFocusedIndex(0);
+        }
       }
-      if (!feedback) {
-        setNarration(step.actions[focusedIndex].label);
-      }
-    }
-  }, [focusedIndex, currentStep, completed, feedback]); 
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showMenu, setFocusedIndex]);
 
   useEffect(() => {
     if (completed) {
       navigate("/exercise-complete", { state: { errors, wrongActions } });
     }
   }, [completed, navigate, errors, wrongActions]);
+
+  useEffect(() => {
+    // Focus en el título al cambiar de paso
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, [currentStep]);
 
   // Visual feedback overlay
   const feedbackStyles = {
@@ -131,14 +146,39 @@ const Exercise = () => {
   };
 
   return (
-    <PageLayout
-      narration={narration}
-      speed={speed}
-      onSpeakingChange={setIsSpeaking}
-      isSpeaking={isSpeaking}
-    >
+    <PageLayout showSnelly={!showMenu}>
+      {/* Botón de menú */}
+      <button 
+        onClick={() => { setShowMenu(!showMenu); if (!showMenu) setFocusedIndex(0); }} 
+        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-card border-2 border-border rounded-full shadow-lg hover:border-primary transition-colors" 
+        aria-label={showMenu ? "Cerrar menú" : "Abrir menú"}
+      >
+        {showMenu ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        <span className="text-sm font-medium hidden sm:inline">{showMenu ? "Cerrar" : "Menú"}</span>
+      </button>
+
+      {/* Modal de menú */}
+      <Modal open={showMenu} onClose={() => setShowMenu(false)} title="Menú del Ejercicio" showCloseButton={false}>
+        <nav className="space-y-2" role="menu" aria-label="Opciones del menú" aria-orientation="vertical">
+          {menuOptions.map((option, index) => (
+            <button 
+              key={index} 
+              ref={setItemRef(index)} 
+              onClick={option.action} 
+              role="menuitem"
+              tabIndex={getTabIndex(index)}
+              aria-label={option.label}
+              onFocus={() => handleItemFocus(index)}
+              className={`w-full p-3 text-left rounded-lg border-2 transition-all flex items-center gap-3 ${focusedIndex === index ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+            >
+              <span className="text-primary">{option.icon}</span>
+              {option.label}
+            </button>
+          ))}
+        </nav>
+      </Modal>
+
       <div className="pt-8 sm:pt-12">
-        {/* ... (Resto del JSX se mantiene igual) ... */}
         <div className="flex items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span tabIndex={0} className="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium" aria-label={`Paso ${currentStep + 1} de ${exerciseSteps.length}`}>
@@ -155,7 +195,7 @@ const Exercise = () => {
 
         {/* Equation Display */}
         <div className={`hero-card text-center mb-8 transition-all duration-300 ${feedback ? feedbackStyles[feedback] : ''}`}>
-          <p tabIndex={0} className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+          <p ref={titleRef} tabIndex={0} className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Resuelve la ecuación
           </p>
           <h1 tabIndex={0} className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gradient font-display" aria-label={`Ecuación: ${step.equation}`}>
@@ -167,13 +207,22 @@ const Exercise = () => {
         </div>
 
         {/* Answer Options */}
-        <nav className="space-y-3" role="navigation" aria-label="Opciones de respuesta">
+        <nav 
+          className="space-y-3" 
+          role="menu" 
+          aria-label="Opciones de respuesta"
+          aria-orientation="vertical"
+        >
           {step.actions.map((action, index) => (
             <MenuButton
               key={index}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
               onClick={() => handleAction(index)}
+              role="menuitem"
+              tabIndex={getTabIndex(index)}
+              aria-label={`Opción ${String.fromCharCode(65 + index)}: ${action.label}`}
+              onItemFocus={() => handleItemFocus(index)}
             >
               <span className="flex items-center gap-3">
                 <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-primary/10 text-primary font-bold text-sm">
@@ -184,6 +233,16 @@ const Exercise = () => {
             </MenuButton>
           ))}
         </nav>
+
+        {/* Botón para volver a leer el ejercicio */}
+        <button
+          onClick={() => titleRef.current?.focus()}
+          className="mt-6 w-full flex items-center justify-center gap-2 p-3 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg border border-primary/30 transition-colors"
+          aria-label="Volver a leer el ejercicio desde el inicio"
+        >
+          <Focus className="w-4 h-4" aria-hidden="true" />
+          Volver al ejercicio
+        </button>
 
         <KeyboardHelper controls={keyboardControls} />
       </div>

@@ -1,91 +1,69 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Narration from "@/components/Narration";
-import Snelly from "@/components/Snelly";
-import NavigableButton from "@/components/NavigableButton";
+import { RotateCcw, RefreshCw, Home } from "lucide-react";
+import PageLayout from "@/components/ui/PageLayout";
+import MenuButton from "@/components/ui/MenuButton";
+import KeyboardHelper from "@/components/ui/KeyboardHelper";
 import { useKeyboardNav } from "@/hooks/useKeyboardNav";
-import { equationToVerbal } from "@/lib/utils";
 
 const ExerciseComplete = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const errors = location.state?.errors || 0;
   const wrongActions: string[] = location.state?.wrongActions || [];
-  const [narration, setNarration] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speed, setSpeed] = useState(1.0);
-  const isInitialMount = useRef(true);
+  const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
-    const savedSpeed = localStorage.getItem('narratorSpeed');
-    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
+    if (titleRef.current) {
+      titleRef.current.focus();
+    }
   }, []);
 
   const options = [
-    { label: "Volver a resolver el ejercicio", route: "/exercises", narration: "Botón Volver a resolver el ejercicio." },
-    { label: "Nuevo Ejercicio", route: "/exercises", narration: "Botón Nuevo Ejercicio." },
-    { label: "Menú Principal", route: "/menu", narration: "Botón Menú Principal." },
+    { label: "Volver a resolver el ejercicio", route: "/exercises", icon: <RotateCcw className="w-5 h-5" /> },
+    { label: "Nuevo Ejercicio", route: "/exercises", icon: <RefreshCw className="w-5 h-5" /> },
+    { label: "Menú Principal", route: "/menu", icon: <Home className="w-5 h-5" /> },
   ];
 
-  const { focusedIndex, setItemRef } = useKeyboardNav({
+  const { focusedIndex, setItemRef, getTabIndex, handleItemFocus } = useKeyboardNav({
     itemCount: options.length,
     onSelect: (index) => {
       navigate(options[index].route);
     },
+    tabBehavior: "natural",
+    orientation: "vertical",
   });
 
-  // Efecto principal para la narración de resultados
-  useEffect(() => {
-    const resultadoVerbal = equationToVerbal("x = 5");
-    const erroresText = errors === 1 ? "un error" : `${errors} errores`;
-    
-    // Lógica condicional solicitada
-    const seccionErrores = errors > 0 
-      ? ` Durante el proceso, cometiste ${erroresText}.` 
-      : " ¡Lo hiciste sin errores!";
-    
-    let wrongActionsText = "";
-    if (wrongActions.length > 0) {
-      wrongActionsText = ` Las acciones incorrectas fueron: ${wrongActions.join(", ")}.`;
-    }
-    
-    setNarration(`¡Ecuación finalizada! Resultado: ${resultadoVerbal}.${seccionErrores}${wrongActionsText} Por favor, elige una opción.`);
-  }, [errors, wrongActions]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    setNarration(options[focusedIndex].narration);
-  }, [focusedIndex]);
+  const keyboardControls = [
+    { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Tab"], action: "Siguiente elemento" },
+    { keys: ["Enter"], action: "Seleccionar" },
+    { keys: ["Esc"], action: "Menú" },
+  ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-8">
-      <Narration text={narration} speed={speed} onSpeakingChange={setIsSpeaking} />
-      <Snelly isSpeaking={isSpeaking} />
-      
-      <div className="max-w-2xl mx-auto pt-24">
-        <header className="border-4 border-green-500 bg-gradient-to-br from-card to-green-500/10 p-12 rounded-2xl mb-8 text-center shadow-2xl">
-          <div className="text-8xl mb-6" role="img" aria-label="Marca de verificación">✓</div>
-          <h1 tabIndex={0} className="text-6xl font-bold mb-6 bg-gradient-to-r from-green-500 to-accent bg-clip-text text-transparent">
+    <PageLayout>
+      <div className="pt-8 sm:pt-16">
+        <header className="hero-card border-success/30 text-center mb-8">
+          <div className="text-6xl mb-4" role="img" aria-label="Marca de verificación">✓</div>
+          <h1 ref={titleRef} tabIndex={0} className="text-4xl sm:text-5xl font-bold text-success mb-4">
             ¡Ecuación Resuelta!
           </h1>
-          <div className="border-4 border-primary rounded-xl p-8 bg-gradient-to-br from-primary/5 to-accent/5">
-            <div tabIndex={0} className="text-5xl font-bold mb-2 text-primary" aria-label="Resultado: x igual a 5">x = 5</div>
-            <div tabIndex={0} className="text-xl text-muted-foreground font-medium">Resultado Final</div>
+          <div className="border-2 border-primary/30 rounded-xl p-6 bg-primary/5">
+            <div tabIndex={0} className="text-4xl sm:text-5xl font-bold text-primary mb-2" aria-label="Resultado: x igual a 5">x = 5</div>
+            <div tabIndex={0} className="text-lg text-muted-foreground">Resultado Final</div>
           </div>
         </header>
 
-        <section className="border-4 border-border bg-card p-8 rounded-lg mb-8" aria-label="Resumen de errores">
+        <section className="hero-card mb-8" aria-label="Resumen de errores">
           <div className="flex justify-between items-center">
-            <span tabIndex={0} className="text-2xl font-medium">Errores Cometidos:</span>
-            <span tabIndex={0} className={`text-5xl font-bold ${errors === 0 ? 'text-green-500' : 'text-destructive'}`} aria-label={`${errors} errores`}>
+            <span tabIndex={0} className="text-xl font-medium">Errores Cometidos:</span>
+            <span tabIndex={0} className={`text-4xl font-bold ${errors === 0 ? 'text-success' : 'text-destructive'}`} aria-label={`${errors} errores`}>
               {errors}
             </span>
           </div>
           {errors === 0 && (
-            <p tabIndex={0} className="text-center mt-4 text-lg text-green-500 font-medium">
+            <p tabIndex={0} className="text-center mt-4 text-lg text-success font-medium">
               ¡Perfecto! ¡Sin errores!
             </p>
           )}
@@ -93,37 +71,42 @@ const ExerciseComplete = () => {
             <div className="mt-4 pt-4 border-t border-border">
               <h2 tabIndex={0} className="text-lg font-medium mb-2">Acciones incorrectas:</h2>
               <ul className="list-disc list-inside text-muted-foreground">
-                {wrongActions.map((action, index) => (
-                  <li tabIndex={0} key={index}>{action}</li>
+                {wrongActions.map((action, idx) => (
+                  <li tabIndex={0} key={idx}>{action}</li>
                 ))}
               </ul>
             </div>
           )}
         </section>
 
-        <nav className="space-y-4" role="navigation" aria-label="Opciones de finalización">
+        <nav 
+          className="space-y-3" 
+          role="menu" 
+          aria-label="Opciones de finalización"
+          aria-orientation="vertical"
+        >
           {options.map((option, index) => (
-            <NavigableButton
+            <MenuButton
               key={option.label}
               ref={setItemRef(index)}
               focused={focusedIndex === index}
               onClick={() => navigate(option.route)}
+              icon={option.icon}
+              role="menuitem"
+              tabIndex={getTabIndex(index)}
+              aria-label={option.label}
+              onItemFocus={() => handleItemFocus(index)}
             >
               {option.label}
-            </NavigableButton>
+            </MenuButton>
           ))}
         </nav>
 
-        <aside className="mt-8 p-4 border-2 border-border bg-muted rounded-lg text-sm text-muted-foreground" aria-label="Controles">
-          <h2 className="font-semibold mb-3 text-foreground">Controles de Teclado:</h2>
-          <ul className="space-y-2">
-            <li><kbd className="px-2 py-1 bg-background rounded border">↑↓</kbd> o <kbd className="px-2 py-1 bg-background rounded border">Tab</kbd> Navegar opciones</li>
-            <li><kbd className="px-2 py-1 bg-background rounded border">Enter</kbd> Seleccionar opción</li>
-          </ul>
-        </aside>
+        <KeyboardHelper controls={keyboardControls} />
       </div>
-    </main>
+    </PageLayout>
   );
 };
+
 
 export default ExerciseComplete;

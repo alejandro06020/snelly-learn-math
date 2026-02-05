@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Dumbbell, Settings } from "lucide-react";
+import { BookOpen, Dumbbell, Info } from "lucide-react";
 import PageLayout from "@/components/ui/PageLayout";
 import HeroSection from "@/components/ui/HeroSection";
 import MenuButton from "@/components/ui/MenuButton";
@@ -9,76 +8,60 @@ import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 const MainMenu = () => {
   const navigate = useNavigate();
-  const [narration, setNarration] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speed, setSpeed] = useState(1.0);
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    const savedSpeed = localStorage.getItem('narratorSpeed');
-    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
-  }, []);
 
   const menuOptions = [
     { 
       label: "Aprender", 
       description: "Lecciones paso a paso sobre ecuaciones",
       route: "/learn", 
-      narration: "Botón Aprender. Accede a las lecciones de ecuaciones.",
       icon: <BookOpen className="w-6 h-6" />
     },
     { 
       label: "Ejercicios", 
       description: "Practica resolviendo problemas",
       route: "/exercises", 
-      narration: "Botón Ejercicios. Practica resolviendo ecuaciones.",
       icon: <Dumbbell className="w-6 h-6" />
     },
     { 
-      label: "Opciones", 
-      description: "Ajusta la velocidad y accesibilidad",
-      route: "/options", 
-      narration: "Botón Opciones. Configura la accesibilidad.",
-      icon: <Settings className="w-6 h-6" />
+      label: "Instrucciones", 
+      description: "Volver a ver la bienvenida",
+      route: "/", 
+      icon: <Info className="w-6 h-6" />
     },
   ];
 
-  const { focusedIndex, setItemRef } = useKeyboardNav({
+  const { focusedIndex, setItemRef, getTabIndex, handleItemFocus } = useKeyboardNav({
     itemCount: menuOptions.length,
     onSelect: (index) => {
       navigate(menuOptions[index].route);
     },
+    tabBehavior: "natural",
+    orientation: "vertical",
   });
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      setNarration("Menú Principal de SnailMath. " + menuOptions[0].narration);
-      return;
-    }
-    setNarration(menuOptions[focusedIndex].narration);
-  }, [focusedIndex]);
 
   const keyboardControls = [
     { keys: ["↑", "↓"], action: "Navegar opciones" },
+    { keys: ["Tab"], action: "Siguiente elemento" },
     { keys: ["Enter"], action: "Seleccionar" },
+    { keys: ["Esc"], action: "Menú" },
   ];
 
   return (
-    <PageLayout
-      narration={narration}
-      speed={speed}
-      onSpeakingChange={setIsSpeaking}
-      isSpeaking={isSpeaking}
-    >
+    <PageLayout>
       <div className="pt-8 sm:pt-16">
         <HeroSection
           title="SnailMath"
           subtitle="Aprende ecuaciones matemáticas de forma interactiva y accesible"
           size="large"
+          autoFocus
         />
 
-        <nav className="space-y-3" role="navigation" aria-label="Menú principal">
+        <nav 
+          className="space-y-3" 
+          role="menu" 
+          aria-label="Menú principal"
+          aria-orientation="vertical"
+        >
           {menuOptions.map((option, index) => (
             <MenuButton
               key={option.label}
@@ -87,6 +70,10 @@ const MainMenu = () => {
               onClick={() => navigate(option.route)}
               icon={option.icon}
               description={option.description}
+              role="menuitem"
+              tabIndex={getTabIndex(index)}
+              aria-label={`${option.label}. ${option.description}`}
+              onItemFocus={() => handleItemFocus(index)}
             >
               {option.label}
             </MenuButton>

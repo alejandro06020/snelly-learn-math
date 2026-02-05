@@ -1,13 +1,8 @@
 import { ReactNode } from "react";
-import Narration from "@/components/Narration";
 import Snelly from "@/components/Snelly";
 
 interface PageLayoutProps {
   children: ReactNode;
-  narration?: string;
-  speed?: number;
-  onSpeakingChange?: (speaking: boolean) => void;
-  isSpeaking?: boolean;
   showSnelly?: boolean;
   snellySize?: "small" | "medium" | "large";
 }
@@ -15,13 +10,10 @@ interface PageLayoutProps {
 /**
  * PageLayout - Consistent layout wrapper for all pages
  * Implements Nielsen's Heuristic #4: Consistency and standards
+ * Screen reader friendly - relies on native HTML semantics
  */
 const PageLayout = ({
   children,
-  narration = "",
-  speed = 1.0,
-  onSpeakingChange,
-  isSpeaking = false,
   showSnelly = true,
   snellySize = "medium",
 }: PageLayoutProps) => {
@@ -32,11 +24,8 @@ const PageLayout = ({
         Saltar al contenido principal
       </a>
 
-      {/* Narrator - invisible but functional for accessibility */}
-      <Narration text={narration} speed={speed} onSpeakingChange={onSpeakingChange} />
-
-      {/* Snelly character - visual feedback */}
-      {showSnelly && <Snelly isSpeaking={isSpeaking} size={snellySize} />}
+      {/* Snelly character - visual mascot */}
+      {showSnelly && <Snelly size={snellySize} />}
 
       {/* Main content area */}
       <main id="main-content" className="content-wrapper animate-fade-in">

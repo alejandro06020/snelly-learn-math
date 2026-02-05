@@ -8,6 +8,7 @@ interface MenuButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   description?: string;
   status?: "default" | "completed" | "current" | "locked";
   variant?: "default" | "primary" | "secondary" | "danger";
+  onItemFocus?: () => void;
 }
 
 /**
@@ -28,6 +29,8 @@ const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
       variant = "default",
       className,
       disabled,
+      onItemFocus,
+      onFocus,
       ...props
     },
     ref
@@ -46,6 +49,11 @@ const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
       locked: <div className="w-5 h-5 text-muted-foreground">🔒</div>,
     };
 
+    const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+      onItemFocus?.();
+      onFocus?.(e);
+    };
+
     return (
       <button
         ref={ref}
@@ -58,6 +66,7 @@ const MenuButton = forwardRef<HTMLButtonElement, MenuButtonProps>(
           className
         )}
         aria-current={status === "current" ? "step" : undefined}
+        onFocus={handleFocus}
         {...props}
       >
         <div className="flex items-center gap-4">

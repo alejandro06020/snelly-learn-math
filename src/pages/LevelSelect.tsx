@@ -1,4 +1,3 @@
-import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, BookOpen, BrainCircuit, ArrowLeft } from "lucide-react";
 import PageLayout from "@/components/ui/PageLayout";
@@ -9,15 +8,6 @@ import { useKeyboardNav } from "@/hooks/useKeyboardNav";
 
 const LevelSelect = () => {
   const navigate = useNavigate();
-  const [narration, setNarration] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speed, setSpeed] = useState(1.0);
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    const savedSpeed = localStorage.getItem('narratorSpeed');
-    if (savedSpeed) setSpeed(parseFloat(savedSpeed));
-  }, []);
 
   // Get completed levels from localStorage
   const getCompletedLevels = () => {
@@ -39,7 +29,6 @@ const LevelSelect = () => {
       label: "Introducción a Ecuaciones", 
       description: "Conceptos básicos y tu primera ecuación",
       route: "/learn/level/1",
-      narration: "Nivel 1: Introducción. Aprende los conceptos básicos de ecuaciones.",
       icon: <GraduationCap className="w-6 h-6" />
     },
     { 
@@ -47,7 +36,6 @@ const LevelSelect = () => {
       label: "Operaciones Básicas", 
       description: "Suma, resta, multiplicación y división",
       route: "/learn/level/2",
-      narration: "Nivel 2: Operaciones Básicas. Practica con las cuatro operaciones.",
       icon: <BookOpen className="w-6 h-6" />
     },
     { 
@@ -55,7 +43,6 @@ const LevelSelect = () => {
       label: "Variables en Ambos Lados", 
       description: "Ecuaciones más avanzadas",
       route: "/learn/level/3",
-      narration: "Nivel 3: Variables en Ambos Lados. Resuelve ecuaciones complejas.",
       icon: <BrainCircuit className="w-6 h-6" />
     },
     { 
@@ -63,30 +50,24 @@ const LevelSelect = () => {
       label: "Volver al Menú", 
       description: "",
       route: "/menu",
-      narration: "Volver al Menú Principal.",
       icon: <ArrowLeft className="w-6 h-6" />
     },
   ];
 
-  const { focusedIndex, setItemRef } = useKeyboardNav({
+  const { focusedIndex, setItemRef, getTabIndex, handleItemFocus } = useKeyboardNav({
     itemCount: levels.length,
     onSelect: (index) => {
       navigate(levels[index].route);
     },
+    tabBehavior: "natural",
+    orientation: "vertical",
   });
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      setNarration("Selección de Nivel. " + levels[0].narration);
-      return;
-    }
-    setNarration(levels[focusedIndex].narration);
-  }, [focusedIndex]);
 
   const keyboardControls = [
     { keys: ["↑", "↓"], action: "Navegar niveles" },
+    { keys: ["Tab"], action: "Siguiente elemento" },
     { keys: ["Enter"], action: "Seleccionar nivel" },
+    { keys: ["Esc"], action: "Menú" },
   ];
 
   const getLevelStatus = (levelId: string) => {
@@ -96,20 +77,21 @@ const LevelSelect = () => {
   };
 
   return (
-    <PageLayout
-      narration={narration}
-      speed={speed}
-      onSpeakingChange={setIsSpeaking}
-      isSpeaking={isSpeaking}
-    >
+    <PageLayout>
       <div className="pt-8 sm:pt-16">
         <HeroSection
+          autoFocus
           title="Elige Tu Nivel"
           subtitle="Selecciona el nivel de dificultad para comenzar tu aprendizaje"
           size="medium"
         />
 
-        <nav className="space-y-3" role="navigation" aria-label="Selección de nivel">
+        <nav 
+          className="space-y-3" 
+          role="menu" 
+          aria-label="Selección de nivel"
+          aria-orientation="vertical"
+        >
           {levels.map((level, index) => (
             <MenuButton
               key={level.id}
@@ -120,6 +102,10 @@ const LevelSelect = () => {
               description={level.description}
               status={getLevelStatus(level.id)}
               variant={level.id === "back" ? "secondary" : "default"}
+              role="menuitem"
+              tabIndex={getTabIndex(index)}
+              aria-label={`${level.label}. ${level.description}`}
+              onItemFocus={() => handleItemFocus(index)}
             >
               {level.label}
             </MenuButton>
