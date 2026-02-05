@@ -206,6 +206,17 @@ const Exercise = () => {
           />
         </div>
 
+        {/* Anuncio de feedback para lectores de pantalla */}
+        <div 
+          role="status" 
+          aria-live="assertive" 
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {feedback === "correct" && "¡Correcto! Pasando al siguiente paso."}
+          {feedback === "incorrect" && "Incorrecto. Intenta de nuevo."}
+        </div>
+
         {/* Equation Display */}
         <div className={`hero-card text-center mb-8 transition-all duration-300 ${feedback ? feedbackStyles[feedback] : ''}`}>
           <p ref={titleRef} tabIndex={0} className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">

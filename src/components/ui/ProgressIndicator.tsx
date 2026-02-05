@@ -39,13 +39,10 @@ const ProgressIndicator = ({
 
       {/* Dot indicators */}
       {total <= 10 && (
-        <div className="flex justify-center gap-2 mt-4" role="tablist" aria-label="Progreso">
+        <div className="flex justify-center gap-2 mt-4" aria-hidden="true">
           {Array.from({ length: total }).map((_, index) => (
             <div
               key={index}
-              role="tab"
-              aria-selected={current === index}
-              aria-label={labels?.[index] || `Paso ${index + 1}`}
               className={`progress-dot ${
                 current === index
                   ? "active"

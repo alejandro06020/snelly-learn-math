@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -16,6 +16,7 @@ interface ModalProps {
  * Implements:
  * - Heuristic #3: User control and freedom (close button, escape key)
  * - Heuristic #9: Help users recognize errors (warning variant)
+ * - WCAG 2.4.3: Focus trap dentro del modal
  */
 const Modal = ({
   open,
@@ -26,16 +27,64 @@ const Modal = ({
   variant = "default",
   showCloseButton = true,
 }: ModalProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  // Focus trap: mantener el foco dentro del modal
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape" && onClose) {
+      onClose();
+      return;
+    }
+
+    if (e.key !== "Tab" || !modalRef.current) return;
+
+    const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
+      }
+    }
+  }, [onClose]);
+
   useEffect(() => {
     if (open) {
+      // Guardar el elemento enfocado antes de abrir
+      previousActiveElement.current = document.activeElement as HTMLElement;
       document.body.style.overflow = "hidden";
+      document.addEventListener("keydown", handleKeyDown);
+      
+      // Enfocar el primer elemento focusable del modal
+      setTimeout(() => {
+        const firstFocusable = modalRef.current?.querySelector<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        firstFocusable?.focus();
+      }, 50);
     } else {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+      
+      // Restaurar el foco al elemento anterior
+      previousActiveElement.current?.focus();
     }
+    
     return () => {
       document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [open]);
+  }, [open, handleKeyDown]);
 
   if (!open) return null;
 
@@ -68,6 +117,7 @@ const Modal = ({
 
       {/* Modal content */}
       <div
+        ref={modalRef}
         className={`relative w-full max-w-lg bg-card rounded-2xl border-2 ${variantStyles[variant]} shadow-2xl animate-scale-in`}
       >
         {/* Header */}
@@ -83,7 +133,7 @@ const Modal = ({
             {showCloseButton && onClose && (
               <button
                 onClick={onClose}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Cerrar"
               >
                 <X className="w-5 h-5" />

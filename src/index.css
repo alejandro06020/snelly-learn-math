@@ -40,7 +40,7 @@
 
     /* Muted: Subtle gray-blue */
     --muted: 220 15% 92%;
-    --muted-foreground: 220 15% 45%;
+    --muted-foreground: 220 20% 35%;
 
     /* Accent: Energetic green for success/progress */
     --accent: 155 70% 40%;
@@ -96,7 +96,7 @@
     --secondary: 220 25% 20%;
     --secondary-foreground: 220 15% 95%;
     --muted: 220 25% 18%;
-    --muted-foreground: 220 15% 60%;
+    --muted-foreground: 220 15% 70%;
     --accent: 155 70% 45%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;

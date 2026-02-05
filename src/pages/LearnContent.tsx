@@ -68,10 +68,14 @@ const LearnContent = () => {
   ], [navigate, storageKey]);
 
   const indexOptions = useMemo(() => [
-    ...pages.map((p, i) => ({ label: `${i + 1}. ${p.title}`, action: () => { setCurrentPage(i); setShowIndex(false); setShowEndOptions(false); } })),
-    { label: "Salir", action: () => navigate("/learn") },
-    { label: "Cerrar", action: () => { setShowIndex(false); } }
-  ], [pages, navigate]);
+    ...pages.map((p, i) => ({ 
+      label: `${i + 1}. ${p.title}`, 
+      action: () => { setCurrentPage(i); setShowIndex(false); setShowEndOptions(false); },
+      isCurrent: i === currentPage
+    })),
+    { label: "Salir", action: () => navigate("/learn"), isCurrent: false },
+    { label: "Cerrar", action: () => { setShowIndex(false); }, isCurrent: false }
+  ], [pages, navigate, currentPage]);
 
   const isIndexActive = showIndex;
   const isEndMenuActive = showEndOptions && !showIndex;
@@ -118,11 +122,13 @@ const LearnContent = () => {
               onClick={option.action} 
               role="menuitem"
               tabIndex={getTabIndex(index)}
-              aria-label={option.label}
+              aria-label={option.isCurrent ? `${option.label} (página actual)` : option.label}
+              aria-current={option.isCurrent ? "page" : undefined}
               onFocus={() => handleItemFocus(index)}
-              className={`w-full p-3 text-left rounded-lg border-2 transition-all ${focusedIndex === index ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+              className={`w-full p-3 text-left rounded-lg border-2 transition-all ${option.isCurrent ? 'bg-primary/5' : ''} ${focusedIndex === index ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
             >
               {option.label}
+              {option.isCurrent && <span className="ml-2 text-xs text-primary">(actual)</span>}
             </button>
           ))}
         </nav>

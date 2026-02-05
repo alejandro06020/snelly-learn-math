@@ -49,7 +49,7 @@ const ExerciseComplete = () => {
     <PageLayout>
       <div className="pt-8 sm:pt-16">
         <header className="hero-card border-success/30 text-center mb-8">
-          <div className="text-6xl mb-4" role="img" aria-label="Marca de verificación">✓</div>
+          <div className="text-6xl mb-4" aria-hidden="true">✓</div>
           <h1 ref={titleRef} tabIndex={0} className="text-4xl sm:text-5xl font-bold text-success mb-4">
             ¡Ecuación Resuelta!
           </h1>
